@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Speed Hotkey Settings</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Video Speed Hotkey</h1>
+        <p class="subtitle">Configure your video speed boost settings</p>
+      </header>
+
+      <main>
+        <section class="setting-group">
+          <h2>Hotkey Configuration</h2>
+          <div class="setting-item">
+            <label for="hotkey-input">Hotkey:</label>
+            <input
+              type="text"
+              id="hotkey-input"
+              placeholder="Press a key..."
+              readonly
+            />
+            <button id="clear-hotkey" class="btn-secondary">Clear</button>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="hotkey-enabled" />
+              Enable hotkey
+            </label>
+          </div>
+        </section>
+
+        <section class="setting-group">
+          <h2>Speed Settings</h2>
+          <div class="setting-item">
+            <label for="speed-multiplier">Speed Multiplier:</label>
+            <input
+              type="range"
+              id="speed-multiplier"
+              min="1.25"
+              max="5"
+              step="0.25"
+              value="2"
+            />
+            <span id="speed-value">2.0x</span>
+          </div>
+        </section>
+
+        <section class="setting-group">
+          <h2>Platform Support</h2>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="platform-youtube" />
+              YouTube
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="platform-vimeo" />
+              Vimeo
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="platform-netflix" />
+              Netflix
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="platform-generic" />
+              Other HTML5 Videos
+            </label>
+          </div>
+        </section>
+
+        <section class="setting-group">
+          <h2>Visual Indicator</h2>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="show-indicator" />
+              Show speed indicator
+            </label>
+          </div>
+          <div class="setting-item">
+            <label for="indicator-position">Position:</label>
+            <select id="indicator-position">
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+            </select>
+          </div>
+        </section>
+
+        <footer>
+          <button id="reset-defaults" class="btn-secondary">
+            Reset to Defaults
+          </button>
+          <button id="save-settings" class="btn-primary">Save Settings</button>
+        </footer>
+      </main>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

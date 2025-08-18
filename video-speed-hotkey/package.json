@@ -1,0 +1,26 @@
+{
+  "name": "video-speed-hotkey",
+  "version": "1.0.0",
+  "description": "Chrome extension for temporary video speed boost with hotkey",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.5"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "content/**/*.js",
+      "background/**/*.js",
+      "popup/**/*.js"
+    ]
+  }
+}
