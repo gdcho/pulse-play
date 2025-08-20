@@ -1,3 +1,4 @@
+// content/content-script.js
 // Content script for Video Speed Hotkey extension
 // Injected into web pages to handle video speed manipulation
 

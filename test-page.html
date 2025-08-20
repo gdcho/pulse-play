@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Speed Extension Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      video {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+      }
+      .instructions {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Video Speed Extension Test Page</h1>
+
+    <div class="instructions">
+      <h3>Test Instructions:</h3>
+      <ol>
+        <li>Load this page in Chrome with the extension installed</li>
+        <li>
+          Open the extension popup and configure your hotkey (default: Space)
+        </li>
+        <li>Click "Save Settings" in the popup</li>
+        <li>Play the video below</li>
+        <li>Hold your configured hotkey to speed up the video</li>
+        <li>Release the hotkey to return to normal speed</li>
+      </ol>
+    </div>
+
+    <video controls>
+      <source
+        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        type="video/mp4"
+      />
+      <p>
+        Your browser doesn't support HTML5 video. Here is a
+        <a
+          href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          >link to the video</a
+        >
+        instead.
+      </p>
+    </video>
+
+    <div class="instructions">
+      <h3>Troubleshooting:</h3>
+      <ul>
+        <li>Check the browser console (F12) for any error messages</li>
+        <li>Make sure the extension is enabled and has permissions</li>
+        <li>Try refreshing the page after changing settings</li>
+        <li>Test with different hotkeys if the default doesn't work</li>
+      </ul>
+    </div>
+
+    <script>
+      // Add some debug logging
+      console.log("Test page loaded");
+
+      // Log when video events occur
+      const video = document.querySelector("video");
+      if (video) {
+        video.addEventListener("loadeddata", () => {
+          console.log("Video loaded and ready");
+        });
+
+        video.addEventListener("ratechange", () => {
+          console.log("Video playback rate changed to:", video.playbackRate);
+        });
+      }
+    </script>
+  </body>
+</html>

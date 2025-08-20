@@ -1,3 +1,4 @@
+// shared/settings.js
 /**
  * Settings management utilities for Video Speed Hotkey extension
  * Provides data model, validation, and Chrome storage API integration
@@ -81,7 +82,7 @@ const VALIDATION_RULES = {
     },
     modifiers: {
       type: "array",
-      validModifiers: ["Alt", "Ctrl", "Shift", "Meta"],
+      validModifiers: ["alt", "ctrl", "shift", "meta"],
     },
     enabled: {
       type: "boolean",
@@ -433,8 +434,14 @@ if (typeof module !== "undefined" && module.exports) {
     migrateSettings,
   };
 } else {
-  // Browser environment
-  window.VideoSpeedHotkeySettings = {
+  // Browser/Worker environment
+  const g =
+    typeof self !== "undefined"
+      ? self
+      : typeof window !== "undefined"
+      ? window
+      : globalThis;
+  g.VideoSpeedHotkeySettings = {
     DEFAULT_SETTINGS,
     VALIDATION_RULES,
     validateSettings,

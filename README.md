@@ -4,7 +4,7 @@ A Chrome extension that allows users to temporarily speed up video playback by h
 
 ## Project Structure
 
-```
+```bash
 video-speed-hotkey/
 ├── manifest.json          # Extension configuration (Manifest V3)
 ├── background/

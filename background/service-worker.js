@@ -1,9 +1,9 @@
+// background/service-worker.js
 // Background service worker for Video Speed Hotkey extension
 // Handles settings management and cross-tab coordination
 
 // Import settings utilities
-importScripts("shared/settings.js");
-
+importScripts(chrome.runtime.getURL("shared/settings.js"));
 console.log("Video Speed Hotkey: Background service worker loaded");
 
 // Initialize extension on install

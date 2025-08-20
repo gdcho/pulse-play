@@ -1,3 +1,4 @@
+// popup/popup.js
 // Popup JavaScript for Video Speed Hotkey extension
 // Handles settings interface interactions
 
@@ -118,12 +119,16 @@ function handleHotkeyInput(event) {
   const key = event.code;
   const modifiers = [];
 
-  if (event.ctrlKey) modifiers.push("Ctrl");
-  if (event.altKey) modifiers.push("Alt");
-  if (event.shiftKey) modifiers.push("Shift");
+  if (event.ctrlKey) modifiers.push("ctrl");
+  if (event.altKey) modifiers.push("alt");
+  if (event.shiftKey) modifiers.push("shift");
+  if (event.metaKey) modifiers.push("meta"); // For Mac Command key
 
-  // Display the key combination
-  let displayText = modifiers.join(" + ");
+  // Display the key combination (capitalize for display)
+  const displayModifiers = modifiers.map(
+    (mod) => mod.charAt(0).toUpperCase() + mod.slice(1),
+  );
+  let displayText = displayModifiers.join(" + ");
   if (displayText && key) displayText += " + ";
   displayText += key.replace("Key", "").replace("Digit", "");
 
@@ -160,12 +165,12 @@ function validateHotkey(key, modifiers) {
   }
 
   // Check for Ctrl+key conflicts
-  if (modifiers.includes("Ctrl") && RESERVED_WITH_CTRL.includes(key)) {
+  if (modifiers.includes("ctrl") && RESERVED_WITH_CTRL.includes(key)) {
     hasConflict = true;
   }
 
   // Check for Alt+key conflicts
-  if (modifiers.includes("Alt") && RESERVED_WITH_ALT.includes(key)) {
+  if (modifiers.includes("alt") && RESERVED_WITH_ALT.includes(key)) {
     hasConflict = true;
   }
 
@@ -227,8 +232,11 @@ function renderSettings() {
   // Hotkey settings
   elements.hotkeyEnabled.checked = currentSettings.hotkey.enabled;
 
-  // Display hotkey
-  let hotkeyDisplay = currentSettings.hotkey.modifiers.join(" + ");
+  // Display hotkey (capitalize modifiers for display)
+  const displayModifiers = currentSettings.hotkey.modifiers.map(
+    (mod) => mod.charAt(0).toUpperCase() + mod.slice(1),
+  );
+  let hotkeyDisplay = displayModifiers.join(" + ");
   if (hotkeyDisplay && currentSettings.hotkey.key) hotkeyDisplay += " + ";
   hotkeyDisplay += currentSettings.hotkey.key
     .replace("Key", "")
