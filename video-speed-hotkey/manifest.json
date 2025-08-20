@@ -13,7 +13,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/content-script.js"],
+      "js": ["shared/settings.js", "content/content-script.js"],
       "run_at": "document_idle"
     }
   ],

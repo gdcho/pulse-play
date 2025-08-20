@@ -18,13 +18,26 @@
           <h2>Hotkey Configuration</h2>
           <div class="setting-item">
             <label for="hotkey-input">Hotkey:</label>
-            <input
-              type="text"
-              id="hotkey-input"
-              placeholder="Press a key..."
-              readonly
-            />
+            <div class="hotkey-container">
+              <input
+                type="text"
+                id="hotkey-input"
+                placeholder="Press a key..."
+                readonly
+              />
+              <div id="hotkey-status" class="hotkey-status"></div>
+            </div>
             <button id="clear-hotkey" class="btn-secondary">Clear</button>
+          </div>
+          <div
+            id="hotkey-conflict-warning"
+            class="warning-message"
+            style="display: none"
+          >
+            <span class="warning-icon">⚠️</span>
+            <span class="warning-text"
+              >This hotkey may conflict with browser shortcuts</span
+            >
           </div>
           <div class="setting-item">
             <label>
@@ -47,6 +60,14 @@
               value="2"
             />
             <span id="speed-value">2.0x</span>
+          </div>
+          <div class="speed-preview" id="speed-preview" style="display: none">
+            <div class="preview-text">
+              Preview: Normal speed → <span id="preview-speed">2.0x</span> speed
+            </div>
+            <div class="preview-bar">
+              <div class="preview-indicator" id="preview-indicator"></div>
+            </div>
           </div>
         </section>
 

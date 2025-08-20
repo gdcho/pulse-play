@@ -9,6 +9,55 @@ let elements = {};
 // Current settings
 let currentSettings = null;
 
+// Reserved browser shortcuts to avoid conflicts
+const RESERVED_SHORTCUTS = [
+  "F1",
+  "F5",
+  "F11",
+  "F12",
+  "Tab",
+  "Enter",
+  "Escape",
+  "KeyT",
+  "KeyN",
+  "KeyW",
+  "KeyR",
+  "KeyL",
+  "KeyD",
+  "KeyF",
+  "KeyI",
+  "KeyJ",
+  "KeyU",
+  "KeyH",
+  "Digit1",
+  "Digit2",
+  "Digit3",
+  "Digit4",
+  "Digit5",
+  "Digit6",
+  "Digit7",
+  "Digit8",
+  "Digit9",
+];
+
+const RESERVED_WITH_CTRL = [
+  "KeyT",
+  "KeyN",
+  "KeyW",
+  "KeyR",
+  "KeyL",
+  "KeyD",
+  "KeyF",
+  "KeyI",
+  "KeyJ",
+  "KeyU",
+  "KeyH",
+];
+const RESERVED_WITH_ALT = ["KeyF", "KeyD", "KeyE", "KeyV", "KeyH", "KeyT"];
+
+// Speed preview timeout
+let speedPreviewTimeout = null;
+
 // Initialize popup when DOM is loaded
 document.addEventListener("DOMContentLoaded", initializePopup);
 
@@ -18,10 +67,15 @@ function initializePopup() {
   // Get DOM element references
   elements = {
     hotkeyInput: document.getElementById("hotkey-input"),
+    hotkeyStatus: document.getElementById("hotkey-status"),
+    hotkeyConflictWarning: document.getElementById("hotkey-conflict-warning"),
     clearHotkey: document.getElementById("clear-hotkey"),
     hotkeyEnabled: document.getElementById("hotkey-enabled"),
     speedMultiplier: document.getElementById("speed-multiplier"),
     speedValue: document.getElementById("speed-value"),
+    speedPreview: document.getElementById("speed-preview"),
+    previewSpeed: document.getElementById("preview-speed"),
+    previewIndicator: document.getElementById("preview-indicator"),
     platformYoutube: document.getElementById("platform-youtube"),
     platformVimeo: document.getElementById("platform-vimeo"),
     platformNetflix: document.getElementById("platform-netflix"),
@@ -46,6 +100,9 @@ function setupEventListeners() {
 
   // Speed multiplier slider
   elements.speedMultiplier.addEventListener("input", updateSpeedValue);
+  elements.speedMultiplier.addEventListener("input", showSpeedPreview);
+  elements.speedMultiplier.addEventListener("mouseenter", showSpeedPreview);
+  elements.speedMultiplier.addEventListener("mouseleave", hideSpeedPreview);
 
   // Buttons
   elements.resetDefaults.addEventListener("click", resetToDefaults);
@@ -76,6 +133,9 @@ function handleHotkeyInput(event) {
   elements.hotkeyInput.dataset.key = key;
   elements.hotkeyInput.dataset.modifiers = JSON.stringify(modifiers);
 
+  // Validate hotkey and show visual feedback
+  validateHotkey(key, modifiers);
+
   console.log("Video Speed Hotkey: Captured hotkey:", { key, modifiers });
 }
 
@@ -83,6 +143,65 @@ function clearHotkey() {
   elements.hotkeyInput.value = "";
   elements.hotkeyInput.dataset.key = "";
   elements.hotkeyInput.dataset.modifiers = "[]";
+
+  // Clear validation status
+  elements.hotkeyStatus.className = "hotkey-status";
+  elements.hotkeyConflictWarning.style.display = "none";
+}
+
+function validateHotkey(key, modifiers) {
+  let isValid = true;
+  let hasConflict = false;
+
+  // Check for reserved shortcuts
+  if (RESERVED_SHORTCUTS.includes(key)) {
+    isValid = false;
+    hasConflict = true;
+  }
+
+  // Check for Ctrl+key conflicts
+  if (modifiers.includes("Ctrl") && RESERVED_WITH_CTRL.includes(key)) {
+    hasConflict = true;
+  }
+
+  // Check for Alt+key conflicts
+  if (modifiers.includes("Alt") && RESERVED_WITH_ALT.includes(key)) {
+    hasConflict = true;
+  }
+
+  // Update visual feedback
+  elements.hotkeyStatus.className = `hotkey-status ${
+    isValid ? "valid" : "invalid"
+  }`;
+  elements.hotkeyConflictWarning.style.display = hasConflict ? "block" : "none";
+
+  return isValid;
+}
+
+function showSpeedPreview() {
+  const speed = parseFloat(elements.speedMultiplier.value);
+
+  // Update preview text
+  elements.previewSpeed.textContent = speed.toFixed(1) + "x";
+
+  // Update preview bar (map 1.25-5x to 0-100%)
+  const percentage = ((speed - 1.25) / (5 - 1.25)) * 100;
+  elements.previewIndicator.style.width = percentage + "%";
+
+  // Show preview
+  elements.speedPreview.style.display = "block";
+
+  // Clear existing timeout
+  if (speedPreviewTimeout) {
+    clearTimeout(speedPreviewTimeout);
+  }
+}
+
+function hideSpeedPreview() {
+  // Hide preview after a delay
+  speedPreviewTimeout = setTimeout(() => {
+    elements.speedPreview.style.display = "none";
+  }, 1000);
 }
 
 function updateSpeedValue() {
@@ -120,6 +239,14 @@ function renderSettings() {
     currentSettings.hotkey.modifiers,
   );
 
+  // Validate current hotkey
+  if (currentSettings.hotkey.key) {
+    validateHotkey(
+      currentSettings.hotkey.key,
+      currentSettings.hotkey.modifiers,
+    );
+  }
+
   // Speed multiplier
   elements.speedMultiplier.value = currentSettings.speedMultiplier;
   updateSpeedValue();
@@ -137,8 +264,36 @@ function renderSettings() {
   console.log("Video Speed Hotkey: Settings rendered in popup");
 }
 
+function updateSetting(key, value) {
+  if (!currentSettings) return;
+
+  // Update the setting using dot notation
+  const keys = key.split(".");
+  let target = currentSettings;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!target[keys[i]]) target[keys[i]] = {};
+    target = target[keys[i]];
+  }
+
+  target[keys[keys.length - 1]] = value;
+
+  console.log(`Video Speed Hotkey: Updated setting ${key} to`, value);
+}
+
 function resetToDefaults() {
-  if (confirm("Reset all settings to defaults? This cannot be undone.")) {
+  // Create custom confirmation dialog
+  const confirmed = confirm(
+    "Reset all settings to defaults?\n\n" +
+      "This will:\n" +
+      "• Set hotkey to Spacebar\n" +
+      "• Set speed multiplier to 2.0x\n" +
+      "• Enable all platforms\n" +
+      "• Reset UI preferences\n\n" +
+      "This action cannot be undone.",
+  );
+
+  if (confirmed) {
     // Default settings (matching background script)
     currentSettings = {
       hotkey: {
@@ -161,6 +316,20 @@ function resetToDefaults() {
     };
 
     renderSettings();
+
+    // Show visual feedback
+    const resetButton = elements.resetDefaults;
+    const originalText = resetButton.textContent;
+    resetButton.textContent = "Reset Complete!";
+    resetButton.style.background = "#34a853";
+    resetButton.style.color = "white";
+
+    setTimeout(() => {
+      resetButton.textContent = originalText;
+      resetButton.style.background = "";
+      resetButton.style.color = "";
+    }, 2000);
+
     console.log("Video Speed Hotkey: Settings reset to defaults");
   }
 }
@@ -168,14 +337,34 @@ function resetToDefaults() {
 function saveSettings() {
   if (!currentSettings) return;
 
+  // Validate hotkey before saving
+  const hotkeyKey = elements.hotkeyInput.dataset.key || "Space";
+  const hotkeyModifiers = JSON.parse(
+    elements.hotkeyInput.dataset.modifiers || "[]",
+  );
+
+  if (!validateHotkey(hotkeyKey, hotkeyModifiers)) {
+    alert(
+      "Please choose a different hotkey. The current selection may conflict with browser shortcuts.",
+    );
+    return;
+  }
+
+  // Validate speed multiplier
+  const speedMultiplier = parseFloat(elements.speedMultiplier.value);
+  if (speedMultiplier < 1.25 || speedMultiplier > 5) {
+    alert("Speed multiplier must be between 1.25x and 5.0x");
+    return;
+  }
+
   // Collect settings from form
   const newSettings = {
     hotkey: {
-      key: elements.hotkeyInput.dataset.key || "Space",
-      modifiers: JSON.parse(elements.hotkeyInput.dataset.modifiers || "[]"),
+      key: hotkeyKey,
+      modifiers: hotkeyModifiers,
       enabled: elements.hotkeyEnabled.checked,
     },
-    speedMultiplier: parseFloat(elements.speedMultiplier.value),
+    speedMultiplier: speedMultiplier,
     platforms: {
       youtube: elements.platformYoutube.checked,
       vimeo: elements.platformVimeo.checked,
@@ -188,6 +377,15 @@ function saveSettings() {
       indicatorTimeout: currentSettings.ui.indicatorTimeout, // Keep existing timeout
     },
   };
+
+  // Validate that at least one platform is enabled
+  const platformsEnabled = Object.values(newSettings.platforms).some(
+    (enabled) => enabled,
+  );
+  if (!platformsEnabled) {
+    alert("Please enable at least one platform for the extension to work.");
+    return;
+  }
 
   // Save to background script
   chrome.runtime.sendMessage(
@@ -205,10 +403,12 @@ function saveSettings() {
         const originalText = saveButton.textContent;
         saveButton.textContent = "Saved!";
         saveButton.style.background = "#34a853";
+        saveButton.style.color = "white";
 
         setTimeout(() => {
           saveButton.textContent = originalText;
           saveButton.style.background = "";
+          saveButton.style.color = "";
         }, 1500);
       } else {
         console.error("Video Speed Hotkey: Failed to save settings");

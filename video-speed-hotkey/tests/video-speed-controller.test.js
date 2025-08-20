@@ -1595,3 +1595,527 @@ describe("VideoSpeedController", () => {
     });
   });
 });
+
+// Additional tests for comprehensive coverage
+describe("Speed Control Integration", () => {
+  let controller;
+
+  beforeEach(() => {
+    controller = new VideoSpeedController();
+    jest.clearAllMocks();
+  });
+
+  describe("applySpeedBoost edge cases", () => {
+    test("should handle already speed boosted video", () => {
+      const video = new MockVideoElement({ playbackRate: 2.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Set up video as already speed boosted
+      controller.trackedVideos.set(video, {
+        originalRate: 1.0,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const result = controller.applySpeedBoost(2.0);
+
+      expect(result).toBe(true);
+      expect(video.playbackRate).toBe(2.0); // Should remain at boosted speed
+    });
+
+    test("should reject invalid speed multipliers", () => {
+      const video = new MockVideoElement({ playbackRate: 1.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Test various invalid multipliers
+      expect(controller.applySpeedBoost(0)).toBe(false);
+      expect(controller.applySpeedBoost(-1)).toBe(false);
+      expect(controller.applySpeedBoost(20)).toBe(false);
+      expect(controller.applySpeedBoost("invalid")).toBe(false);
+      expect(controller.applySpeedBoost(null)).toBe(false);
+      expect(controller.applySpeedBoost(undefined)).toBe(false);
+
+      // Video should remain at original speed
+      expect(video.playbackRate).toBe(1.0);
+    });
+
+    test("should handle video without tracked state", () => {
+      const video = new MockVideoElement({ playbackRate: 1.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Don't add video to tracked videos map
+      const result = controller.applySpeedBoost(2.0);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("restoreOriginalSpeed", () => {
+    test("should restore original speed for boosted video", () => {
+      const video = new MockVideoElement({ playbackRate: 2.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Set up video as speed boosted
+      controller.trackedVideos.set(video, {
+        originalRate: 1.5,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const result = controller.restoreOriginalSpeed();
+
+      expect(result).toBe(true);
+      expect(video.playbackRate).toBe(1.5);
+
+      const state = controller.trackedVideos.get(video);
+      expect(state.isSpeedBoosted).toBe(false);
+    });
+
+    test("should return true for non-boosted video", () => {
+      const video = new MockVideoElement({ playbackRate: 1.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      controller.trackedVideos.set(video, {
+        originalRate: 1.0,
+        isSpeedBoosted: false,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const result = controller.restoreOriginalSpeed();
+
+      expect(result).toBe(true);
+      expect(video.playbackRate).toBe(1.0);
+    });
+
+    test("should return false when no active video", () => {
+      document.querySelectorAll.mockReturnValue([]);
+
+      const result = controller.restoreOriginalSpeed();
+
+      expect(result).toBe(false);
+    });
+
+    test("should handle video without tracked state", () => {
+      const video = new MockVideoElement({ playbackRate: 2.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Don't add video to tracked videos map
+      const result = controller.restoreOriginalSpeed();
+
+      expect(result).toBe(false);
+    });
+
+    test("should handle playback rate errors gracefully", () => {
+      const video = new MockVideoElement({ playbackRate: 2.0 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      // Mock playback rate setter to throw error
+      Object.defineProperty(video, "playbackRate", {
+        get: () => 2.0,
+        set: () => {
+          throw new Error("Playback rate error");
+        },
+      });
+
+      controller.trackedVideos.set(video, {
+        originalRate: 1.0,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const result = controller.restoreOriginalSpeed();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("utility methods", () => {
+    test("should check if speed boost is active", () => {
+      const video1 = new MockVideoElement();
+      const video2 = new MockVideoElement();
+
+      controller.trackedVideos.set(video1, {
+        originalRate: 1.0,
+        isSpeedBoosted: false,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      controller.trackedVideos.set(video2, {
+        originalRate: 1.0,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      expect(controller.isSpeedBoostActive()).toBe(true);
+
+      // Set both to not boosted
+      controller.trackedVideos.get(video2).isSpeedBoosted = false;
+      expect(controller.isSpeedBoostActive()).toBe(false);
+    });
+
+    test("should get current speed", () => {
+      const video = new MockVideoElement({ playbackRate: 2.5 });
+      document.querySelectorAll.mockReturnValue([video]);
+
+      expect(controller.getCurrentSpeed()).toBe(2.5);
+    });
+
+    test("should return null when no active video for current speed", () => {
+      document.querySelectorAll.mockReturnValue([]);
+
+      expect(controller.getCurrentSpeed()).toBeNull();
+    });
+
+    test("should reset all speeds", () => {
+      const video1 = new MockVideoElement({ playbackRate: 2.0 });
+      const video2 = new MockVideoElement({ playbackRate: 3.0 });
+
+      controller.trackedVideos.set(video1, {
+        originalRate: 1.0,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      controller.trackedVideos.set(video2, {
+        originalRate: 1.5,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const resetCount = controller.resetAllSpeeds();
+
+      expect(resetCount).toBe(2);
+      expect(video1.playbackRate).toBe(1.0);
+      expect(video2.playbackRate).toBe(1.5);
+      expect(controller.trackedVideos.get(video1).isSpeedBoosted).toBe(false);
+      expect(controller.trackedVideos.get(video2).isSpeedBoosted).toBe(false);
+    });
+
+    test("should handle errors in resetAllSpeeds", () => {
+      const video = new MockVideoElement({ playbackRate: 2.0 });
+
+      // Mock playback rate setter to throw error
+      Object.defineProperty(video, "playbackRate", {
+        get: () => 2.0,
+        set: () => {
+          throw new Error("Playback rate error");
+        },
+      });
+
+      controller.trackedVideos.set(video, {
+        originalRate: 1.0,
+        isSpeedBoosted: true,
+        platform: "generic",
+        lastInteraction: Date.now(),
+      });
+
+      const resetCount = controller.resetAllSpeeds();
+
+      expect(resetCount).toBe(0);
+    });
+  });
+
+  describe("hotkey validation", () => {
+    test("should validate correct hotkey configuration", () => {
+      const config = {
+        key: "Space",
+        modifiers: ["shift"],
+      };
+
+      const result = controller.validateHotkey(config);
+
+      expect(result.success).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    test("should reject invalid hotkey configuration", () => {
+      const config = {
+        key: null,
+        modifiers: ["invalid"],
+      };
+
+      const result = controller.validateHotkey(config);
+
+      expect(result.success).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    test("should detect browser shortcut conflicts", () => {
+      const config = {
+        key: "r",
+        modifiers: ["ctrl"],
+      };
+
+      const result = controller.validateHotkey(config);
+
+      expect(result.conflicts.length).toBeGreaterThan(0);
+      expect(result.warnings.length).toBeGreaterThan(0);
+    });
+
+    test("should provide hotkey recommendations", () => {
+      const recommendations = controller.getRecommendedHotkeys();
+
+      expect(Array.isArray(recommendations)).toBe(true);
+      expect(recommendations.length).toBeGreaterThan(0);
+      expect(recommendations[0]).toHaveProperty("key");
+      expect(recommendations[0]).toHaveProperty("modifiers");
+      expect(recommendations[0]).toHaveProperty("description");
+    });
+
+    test("should filter out current hotkey from recommendations", () => {
+      const currentConfig = {
+        key: "Space",
+        modifiers: ["shift"],
+      };
+
+      const recommendations = controller.getRecommendedHotkeys(currentConfig);
+
+      const hasCurrentConfig = recommendations.some(
+        (rec) =>
+          rec.key === currentConfig.key &&
+          JSON.stringify(rec.modifiers.sort()) ===
+            JSON.stringify(currentConfig.modifiers.sort()),
+      );
+
+      expect(hasCurrentConfig).toBe(false);
+    });
+  });
+
+  describe("error handling", () => {
+    test("should handle DOM query errors gracefully", () => {
+      document.querySelectorAll.mockImplementation(() => {
+        throw new Error("DOM error");
+      });
+
+      const result = controller.detectVideos();
+
+      expect(result).toEqual([]);
+    });
+
+    test("should handle getBoundingClientRect errors", () => {
+      const video = new MockVideoElement();
+      video.getBoundingClientRect = () => {
+        throw new Error("getBoundingClientRect error");
+      };
+
+      const result = controller.isValidVideo(video);
+
+      expect(result).toBe(false);
+    });
+
+    test("should handle getComputedStyle errors", () => {
+      const video = new MockVideoElement();
+      global.getComputedStyle = () => {
+        throw new Error("getComputedStyle error");
+      };
+
+      const result = controller.isValidVideo(video);
+
+      expect(result).toBe(false);
+    });
+  });
+});
+
+describe("Hotkey Detection and Conflict Resolution", () => {
+  let controller;
+
+  beforeEach(() => {
+    controller = new VideoSpeedController();
+    controller.settings = {
+      hotkey: {
+        key: "Space",
+        modifiers: [],
+        enabled: true,
+      },
+      speedMultiplier: 2.0,
+    };
+    jest.clearAllMocks();
+  });
+
+  describe("isConfiguredHotkey", () => {
+    test("should detect configured hotkey correctly", () => {
+      const mockEvent = {
+        key: " ",
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      };
+
+      controller.updateModifierState(mockEvent);
+      const result = controller.isConfiguredHotkey(mockEvent);
+
+      expect(result).toBe(true);
+    });
+
+    test("should reject different key", () => {
+      const mockEvent = {
+        key: "Enter",
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      };
+
+      controller.updateModifierState(mockEvent);
+      const result = controller.isConfiguredHotkey(mockEvent);
+
+      expect(result).toBe(false);
+    });
+
+    test("should detect hotkey with modifiers", () => {
+      controller.settings.hotkey = {
+        key: "Space",
+        modifiers: ["ctrl", "shift"],
+        enabled: true,
+      };
+
+      const mockEvent = {
+        key: " ",
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: true,
+        metaKey: false,
+      };
+
+      controller.updateModifierState(mockEvent);
+      const result = controller.isConfiguredHotkey(mockEvent);
+
+      expect(result).toBe(true);
+    });
+
+    test("should reject when required modifier is missing", () => {
+      controller.settings.hotkey = {
+        key: "Space",
+        modifiers: ["ctrl"],
+        enabled: true,
+      };
+
+      const mockEvent = {
+        key: " ",
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      };
+
+      controller.updateModifierState(mockEvent);
+      const result = controller.isConfiguredHotkey(mockEvent);
+
+      expect(result).toBe(false);
+    });
+
+    test("should reject when extra modifier is pressed", () => {
+      controller.settings.hotkey = {
+        key: "Space",
+        modifiers: [],
+        enabled: true,
+      };
+
+      const mockEvent = {
+        key: " ",
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      };
+
+      controller.updateModifierState(mockEvent);
+      const result = controller.isConfiguredHotkey(mockEvent);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("isConfiguredHotkeyRelease", () => {
+    test("should detect hotkey release correctly", () => {
+      controller.hotkeyState.isPressed = true;
+      controller.hotkeyState.currentKey = "Space";
+
+      const mockEvent = {
+        key: " ",
+      };
+
+      const result = controller.isConfiguredHotkeyRelease(mockEvent);
+
+      expect(result).toBe(true);
+    });
+
+    test("should return false when hotkey is not pressed", () => {
+      controller.hotkeyState.isPressed = false;
+
+      const mockEvent = {
+        key: " ",
+      };
+
+      const result = controller.isConfiguredHotkeyRelease(mockEvent);
+
+      expect(result).toBe(false);
+    });
+
+    test("should return false for different key release", () => {
+      controller.hotkeyState.isPressed = true;
+      controller.hotkeyState.currentKey = "Space";
+
+      const mockEvent = {
+        key: "Enter",
+      };
+
+      const result = controller.isConfiguredHotkeyRelease(mockEvent);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("isTypingInInputField", () => {
+    test("should detect input elements", () => {
+      const input = document.createElement("input");
+      const result = controller.isTypingInInputField(input);
+      expect(result).toBe(true);
+
+      const textarea = document.createElement("textarea");
+      const result2 = controller.isTypingInInputField(textarea);
+      expect(result2).toBe(true);
+
+      const select = document.createElement("select");
+      const result3 = controller.isTypingInInputField(select);
+      expect(result3).toBe(true);
+    });
+
+    test("should detect contenteditable elements", () => {
+      const div = document.createElement("div");
+      div.contentEditable = "true";
+      const result = controller.isTypingInInputField(div);
+      expect(result).toBe(true);
+    });
+
+    test("should detect contenteditable parent", () => {
+      const parent = document.createElement("div");
+      parent.contentEditable = "true";
+      const child = document.createElement("span");
+      parent.appendChild(child);
+
+      const result = controller.isTypingInInputField(child);
+      expect(result).toBe(true);
+    });
+
+    test("should return false for regular elements", () => {
+      const div = document.createElement("div");
+      const result = controller.isTypingInInputField(div);
+      expect(result).toBe(false);
+    });
+
+    test("should handle null target", () => {
+      const result = controller.isTypingInInputField(null);
+      expect(result).toBe(false);
+    });
+  });
+});
