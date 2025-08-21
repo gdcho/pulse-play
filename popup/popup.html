@@ -3,18 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Video Speed Hotkey Settings</title>
+    <title>Pulse Play - Video Speed Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <div class="container">
       <header>
-        <h1>Video Speed Hotkey</h1>
+        <div class="title-container">
+          <img
+            src="../icons/pulse-play.png"
+            alt="Pulse Play"
+            class="header-logo"
+          />
+          <h1>Pulse Play</h1>
+        </div>
         <p class="subtitle">Configure your video speed boost settings</p>
       </header>
 
       <main>
-        <section class="setting-group">
+        <!-- <section class="setting-group">
           <h2>Hotkey Configuration</h2>
           <div class="setting-item">
             <label for="hotkey-input">Hotkey:</label>
@@ -29,21 +42,65 @@
             </div>
             <button id="clear-hotkey" class="btn-secondary">Clear</button>
           </div>
+          <div class="setting-item">
+            <label for="hotkey-preset">Or choose from presets:</label>
+            <select id="hotkey-preset" class="hotkey-preset">
+              <option value="">-- Select a preset --</option>
+              <option value="Backquote">Backquote (`) - Easy to reach</option>
+              <option value="Space">Space - Classic choice</option>
+              <option value="ArrowRight">Right Arrow - Intuitive</option>
+              <option value="F1">F1 - Function key</option>
+              <option value="F2">F2 - Function key</option>
+              <option value="CapsLock">Caps Lock - Good for holding</option>
+              <option value="Tab">Tab - Accessible</option>
+            </select>
+          </div>
           <div
             id="hotkey-conflict-warning"
             class="warning-message"
             style="display: none"
           >
             <span class="warning-icon">⚠️</span>
-            <span class="warning-text"
-              >This hotkey may conflict with browser shortcuts</span
-            >
+            <span class="warning-text">
+              This hotkey may conflict with browser shortcuts
+            </span>
           </div>
           <div class="setting-item">
             <label>
               <input type="checkbox" id="hotkey-enabled" />
               Enable hotkey
             </label>
+          </div>
+          <div class="setting-item">
+            <label for="modifier-keys">Modifier keys (optional):</label>
+            <div class="modifier-keys">
+              <label>
+                <input type="checkbox" id="modifier-ctrl" value="ctrl" />
+                Ctrl
+              </label>
+              <label>
+                <input type="checkbox" id="modifier-alt" value="alt" />
+                Alt
+              </label>
+              <label>
+                <input type="checkbox" id="modifier-shift" value="shift" />
+                Shift
+              </label>
+              <label>
+                <input type="checkbox" id="modifier-meta" value="meta" />
+                Cmd (Mac) / Win (Windows)
+              </label>
+            </div>
+          </div>
+        </section> -->
+
+        <section class="setting-group">
+          <h2>Hotkey Configuration</h2>
+          <div class="setting-item">
+            <div class="hotkey-display">
+              <span class="hotkey-value">Backquote (`)</span>
+              <span class="hotkey-note">Fixed to backquote key</span>
+            </div>
           </div>
         </section>
 
@@ -117,13 +174,6 @@
             </select>
           </div>
         </section>
-
-        <footer>
-          <button id="reset-defaults" class="btn-secondary">
-            Reset to Defaults
-          </button>
-          <button id="save-settings" class="btn-primary">Save Settings</button>
-        </footer>
       </main>
     </div>
 

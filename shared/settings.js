@@ -7,7 +7,7 @@
 // Default settings configuration
 const DEFAULT_SETTINGS = {
   hotkey: {
-    key: "Space",
+    key: "Backquote",
     modifiers: [],
     enabled: true,
   },
@@ -32,6 +32,7 @@ const VALIDATION_RULES = {
       type: "string",
       required: true,
       validKeys: [
+        "Backquote",
         "Space",
         "Enter",
         "Tab",
