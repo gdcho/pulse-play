@@ -80,6 +80,7 @@ function initializePopup() {
     // modifierAlt: document.getElementById("modifier-alt"),
     // modifierShift: document.getElementById("modifier-shift"),
     // modifierMeta: document.getElementById("modifier-meta"),
+    themeToggle: document.getElementById("theme-toggle"),
     speedMultiplier: document.getElementById("speed-multiplier"),
     speedValue: document.getElementById("speed-value"),
     // speedPreview: document.getElementById("speed-preview"),
@@ -96,11 +97,17 @@ function initializePopup() {
   // Set up event listeners
   setupEventListeners();
 
+  // Initialize theme
+  initializeTheme();
+
   // Load current settings
   loadSettings();
 }
 
 function setupEventListeners() {
+  // Theme toggle
+  elements.themeToggle.addEventListener("click", toggleTheme);
+
   // Hotkey input - commented out since hotkey is fixed
   // elements.hotkeyInput.addEventListener("keydown", handleHotkeyInput);
   // elements.clearHotkey.addEventListener("click", clearHotkey);
@@ -389,7 +396,7 @@ function renderSettings() {
 
   // Platform settings
   // elements.platformYoutube.checked = currentSettings.platforms.youtube;
-  // elements.platformVimeo.checked = currentSettings.platforms.vimeo;
+  // elements.platformVimeo.checked = currentSettings.platforms.netflix;
   // elements.platformNetflix.checked = currentSettings.platforms.netflix;
   // elements.platformGeneric.checked = currentSettings.platforms.generic;
 
@@ -398,4 +405,28 @@ function renderSettings() {
   elements.indicatorPosition.value = currentSettings.ui.indicatorPosition;
 
   console.log("Video Speed Hotkey: Settings rendered in popup");
+}
+
+// Theme management functions
+function toggleTheme() {
+  const isDark = document.body.classList.toggle("dark");
+  elements.themeToggle.classList.toggle("dark", isDark);
+
+  // Save theme preference
+  const theme = isDark ? "dark" : "light";
+  localStorage.setItem("pulse-play-theme", theme);
+
+  console.log("Video Speed Hotkey: Theme toggled to:", theme);
+}
+
+function loadTheme() {
+  const savedTheme = localStorage.getItem("pulse-play-theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    elements.themeToggle.classList.add("dark");
+  }
+}
+
+function initializeTheme() {
+  loadTheme();
 }

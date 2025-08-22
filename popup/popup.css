@@ -47,6 +47,7 @@ header {
   margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid #e1e5e9;
+  position: relative;
 }
 
 .title-container {
@@ -62,7 +63,7 @@ header {
 }
 
 h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   font-family: "Orbitron", "Rajdhani", "Exo 2", "Segoe UI", sans-serif;
   color: #3c3c3c;
@@ -75,11 +76,73 @@ h1 {
   color: #666;
 }
 
+.theme-toggle-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.theme-toggle {
+  position: relative;
+  width: 44px;
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.theme-toggle.dark {
+  background: #e5e7eb;
+}
+
+.toggle-handle {
+  width: 18px;
+  height: 18px;
+  background: #a78bfa;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle.dark .toggle-handle {
+  transform: translateX(22px);
+}
+
+.toggle-icon {
+  position: absolute;
+  font-size: 12px;
+  transition: opacity 0.3s ease;
+  opacity: 0.7;
+}
+
+.toggle-icon.moon {
+  right: 8px;
+  opacity: 0.7;
+}
+
+.toggle-icon.sun {
+  left: 8px;
+  opacity: 0;
+  color: #374151;
+}
+
+.theme-toggle.dark .toggle-icon.moon {
+  opacity: 0;
+}
+
+.theme-toggle.dark .toggle-icon.sun {
+  opacity: 1;
+}
+
 .setting-group {
   margin-bottom: 20px;
   background: linear-gradient(135deg, #ffffff 0%, #fefeff 100%);
   border-radius: 12px;
-  padding: 25px;
+  padding: 30px;
   box-shadow: 0 4px 15px rgba(101, 106, 184, 0.1),
     0 0 0 1px rgba(251, 83, 84, 0.1);
   border: 1px solid rgba(101, 106, 184, 0.2);
@@ -512,4 +575,88 @@ input[type="checkbox"]:checked::after {
 
 .scrollable-container::-webkit-scrollbar-thumb:hover {
   background: rgba(168, 139, 220, 0.8);
+}
+
+/* Dark mode styles */
+body.dark {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #334155 100%);
+  color: #e8eaed;
+}
+
+body.dark .setting-group {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(168, 139, 220, 0.3);
+  border: 1px solid rgba(168, 139, 220, 0.4);
+}
+
+body.dark .setting-group h2 {
+  color: #e8eaed;
+}
+
+body.dark label {
+  color: #bdc1c6;
+}
+
+body.dark input[type="text"],
+body.dark select {
+  background: #334155;
+  border-color: #475569;
+  color: #e8eaed;
+}
+
+body.dark input[type="text"]:focus,
+body.dark select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(168, 139, 220, 0.3);
+}
+
+body.dark input[type="range"] {
+  background: #334155;
+}
+
+body.dark input[type="checkbox"] {
+  background-color: #334155;
+  border-color: #a78bfa;
+}
+
+body.dark input[type="checkbox"]:checked {
+  background-color: #a78bfa;
+}
+
+body.dark header {
+  border-bottom-color: #475569;
+}
+
+body.dark .hotkey-value {
+  background: #334155;
+  border-color: #475569;
+  color: #a78bfa;
+}
+
+body.dark .hotkey-note {
+  color: #94a3b8;
+}
+
+body.dark .warning-message {
+  background: #3c2e05;
+  border-color: #9aa0a6;
+  color: #fdd663;
+}
+
+body.dark .speed-preview {
+  background: #4b5563;
+  border-color: #6b7280;
+}
+
+body.dark .preview-text {
+  color: #9ca3af;
+}
+
+body.dark .preview-bar {
+  background: #6b7280;
+}
+
+body.dark h1 {
+  color: #e8eaed;
+  text-shadow: 0 2px 4px rgba(168, 139, 220, 0.3);
 }
