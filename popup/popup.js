@@ -82,13 +82,13 @@ function initializePopup() {
     // modifierMeta: document.getElementById("modifier-meta"),
     speedMultiplier: document.getElementById("speed-multiplier"),
     speedValue: document.getElementById("speed-value"),
-    speedPreview: document.getElementById("speed-preview"),
-    previewSpeed: document.getElementById("preview-speed"),
-    previewIndicator: document.getElementById("preview-indicator"),
-    platformYoutube: document.getElementById("platform-youtube"),
-    platformVimeo: document.getElementById("platform-vimeo"),
-    platformNetflix: document.getElementById("platform-netflix"),
-    platformGeneric: document.getElementById("platform-generic"),
+    // speedPreview: document.getElementById("speed-preview"),
+    // previewSpeed: document.getElementById("preview-speed"),
+    // previewIndicator: document.getElementById("preview-indicator"),
+    // platformYoutube: document.getElementById("platform-youtube"),
+    // platformVimeo: document.getElementById("platform-vimeo"),
+    // platformNetflix: document.getElementById("platform-netflix"),
+    // platformGeneric: document.getElementById("platform-generic"),
     showIndicator: document.getElementById("show-indicator"),
     indicatorPosition: document.getElementById("indicator-position"),
   };
@@ -116,16 +116,16 @@ function setupEventListeners() {
 
   // Speed multiplier slider
   elements.speedMultiplier.addEventListener("input", updateSpeedValue);
-  elements.speedMultiplier.addEventListener("input", showSpeedPreview);
+  // elements.speedMultiplier.addEventListener("input", showSpeedPreview);
   elements.speedMultiplier.addEventListener("input", autoSaveSettings);
-  elements.speedMultiplier.addEventListener("mouseenter", showSpeedPreview);
-  elements.speedMultiplier.addEventListener("mouseleave", hideSpeedPreview);
+  // elements.speedMultiplier.addEventListener("mouseenter", showSpeedPreview);
+  // elements.speedMultiplier.addEventListener("mouseleave", hideSpeedPreview);
 
   // Platform checkboxes - auto-save
-  elements.platformYoutube.addEventListener("change", autoSaveSettings);
-  elements.platformVimeo.addEventListener("change", autoSaveSettings);
-  elements.platformNetflix.addEventListener("change", autoSaveSettings);
-  elements.platformGeneric.addEventListener("change", autoSaveSettings);
+  // elements.platformYoutube.addEventListener("change", autoSaveSettings);
+  // elements.platformVimeo.addEventListener("change", autoSaveSettings);
+  // elements.platformNetflix.addEventListener("change", autoSaveSettings);
+  // elements.platformGeneric.addEventListener("change", autoSaveSettings);
 
   // Visual indicator settings - auto-save
   elements.showIndicator.addEventListener("change", autoSaveSettings);
@@ -279,14 +279,14 @@ function showSpeedPreview() {
   const speed = parseFloat(elements.speedMultiplier.value);
 
   // Update preview text
-  elements.previewSpeed.textContent = speed.toFixed(1) + "x";
+  // elements.previewSpeed.textContent = speed.toFixed(1) + "x";
 
   // Update preview bar (map 1.25-5x to 0-100%)
-  const percentage = ((speed - 1.25) / (5 - 1.25)) * 100;
-  elements.previewIndicator.style.width = percentage + "%";
+  // const percentage = ((speed - 1.25) / (5 - 1.25)) * 100;
+  // elements.previewIndicator.style.width = percentage + "%";
 
   // Show preview
-  elements.speedPreview.style.display = "block";
+  // elements.speedPreview.style.display = "block";
 
   // Clear existing timeout
   if (speedPreviewTimeout) {
@@ -297,7 +297,7 @@ function showSpeedPreview() {
 function hideSpeedPreview() {
   // Hide preview after a delay
   speedPreviewTimeout = setTimeout(() => {
-    elements.speedPreview.style.display = "none";
+    // elements.speedPreview.style.display = "none";
   }, 1000);
 }
 
@@ -318,10 +318,10 @@ function autoSaveSettings() {
     },
     speedMultiplier: parseFloat(elements.speedMultiplier.value),
     platforms: {
-      youtube: elements.platformYoutube.checked,
-      vimeo: elements.platformVimeo.checked,
-      netflix: elements.platformNetflix.checked,
-      generic: elements.platformGeneric.checked,
+      youtube: true,
+      vimeo: true,
+      netflix: true,
+      generic: true,
     },
     ui: {
       showIndicator: elements.showIndicator.checked,
@@ -339,16 +339,6 @@ function autoSaveSettings() {
     "Video Speed Hotkey: Parsed speed multiplier:",
     newSettings.speedMultiplier,
   );
-
-  // Validate that at least one platform is enabled
-  const platformsEnabled = Object.values(newSettings.platforms).some(
-    (enabled) => enabled,
-  );
-  if (!platformsEnabled) {
-    // Re-enable generic if all platforms are disabled
-    newSettings.platforms.generic = true;
-    elements.platformGeneric.checked = true;
-  }
 
   // Update current settings
   currentSettings = newSettings;
@@ -398,10 +388,10 @@ function renderSettings() {
   updateSpeedValue();
 
   // Platform settings
-  elements.platformYoutube.checked = currentSettings.platforms.youtube;
-  elements.platformVimeo.checked = currentSettings.platforms.vimeo;
-  elements.platformNetflix.checked = currentSettings.platforms.netflix;
-  elements.platformGeneric.checked = currentSettings.platforms.generic;
+  // elements.platformYoutube.checked = currentSettings.platforms.youtube;
+  // elements.platformVimeo.checked = currentSettings.platforms.vimeo;
+  // elements.platformNetflix.checked = currentSettings.platforms.netflix;
+  // elements.platformGeneric.checked = currentSettings.platforms.generic;
 
   // UI settings
   elements.showIndicator.checked = currentSettings.ui.showIndicator;
