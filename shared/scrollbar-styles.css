@@ -1,0 +1,140 @@
+/* Custom Scrollbar Styles for Video Speed Hotkey Extension */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(168, 139, 220, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(168, 139, 220, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+  box-shadow: 0 3px 6px rgba(168, 139, 220, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-corner {
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f8f9fa;
+}
+
+/* Custom scrollbar for specific containers */
+.scrollable-container {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f8f9fa;
+}
+
+.scrollable-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background: rgba(168, 139, 220, 0.05);
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background: rgba(168, 139, 220, 0.6);
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 139, 220, 0.8);
+}
+
+/* Video Speed Hotkey specific scrollbar class */
+.video-speed-hotkey-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.video-speed-hotkey-scrollbar::-webkit-scrollbar-track {
+  background: rgba(168, 139, 220, 0.1);
+  border-radius: 5px;
+}
+
+.video-speed-hotkey-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.video-speed-hotkey-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+}
+
+.video-speed-hotkey-scrollbar::-webkit-scrollbar-corner {
+  background: rgba(168, 139, 220, 0.05);
+}
+
+.video-speed-hotkey-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa rgba(168, 139, 220, 0.1);
+}
+
+/* Dark theme scrollbar variants */
+.dark-theme::-webkit-scrollbar-track {
+  background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
+  border: 1px solid rgba(168, 139, 220, 0.2);
+}
+
+.dark-theme::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme::-webkit-scrollbar-corner {
+  background: #2d2d2d;
+}
+
+.dark-theme {
+  scrollbar-color: #9333ea #2d2d2d;
+}
+
+/* Thin scrollbar variant */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(168, 139, 220, 0.05);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(168, 139, 220, 0.4);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 139, 220, 0.6);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 139, 220, 0.4) rgba(168, 139, 220, 0.05);
+}

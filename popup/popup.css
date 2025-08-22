@@ -11,7 +11,9 @@ body {
   font-size: 14px;
   line-height: 1.4;
   color: #333;
-  background: linear-gradient(135deg, #ffffff 0%, #bba4da 50%, #fdf8ff 100%);
+  /* background: linear-gradient(135deg, #f9f3fe 0%, #c3a6ff 50%, #6b46c1 100%); */
+  background: linear-gradient(135deg, #fcfcfc 0%, #d6b4fc 40%, #7c3aed 100%);
+
   width: 350px;
   min-height: 500px;
   max-width: 100vw;
@@ -51,7 +53,7 @@ header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  /* margin-bottom: 8px; */
 }
 
 .header-logo {
@@ -60,10 +62,10 @@ header {
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   font-family: "Orbitron", "Rajdhani", "Exo 2", "Segoe UI", sans-serif;
-  color: #ff5757;
+  color: #3c3c3c;
   margin: 0;
   text-shadow: 0 2px 4px rgba(251, 83, 84, 0.3);
 }
@@ -155,7 +157,42 @@ input[type="text"]:focus {
 input[type="range"] {
   flex: 1;
   margin: 0 8px;
-  accent-color: #885ebe;
+  accent-color: #a78bfa;
+  background: white;
+  border-radius: 4px;
+  height: 6px;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: white;
+  border-radius: 4px;
+  height: 6px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background: #a78bfa;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-track {
+  background: white;
+  border-radius: 4px;
+  height: 6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #a78bfa;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 select {
@@ -169,18 +206,43 @@ select {
 
 select:focus {
   outline: none;
-  border-color: #885ebe;
+  border-color: #a78bfa;
 }
 
 input[type="checkbox"] {
   margin-right: 8px;
-  accent-color: #885ebe;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border: 2px solid #a78bfa;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #a78bfa;
+  border-color: #a78bfa;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  line-height: 1;
 }
 
 #speed-value {
   min-width: 40px;
   font-weight: 600;
-  color: #885ebe;
+  color: #a78bfa;
 }
 
 .hotkey-container {
@@ -232,7 +294,7 @@ input[type="checkbox"] {
 .hotkey-value {
   font-size: 14px;
   font-weight: 600;
-  color: #885ebe;
+  color: #a78bfa;
   padding: 8px 12px;
   background: #fefeff;
   border: 1px solid #e1e5e9;
@@ -294,7 +356,7 @@ input[type="checkbox"] {
 
 .preview-indicator {
   height: 100%;
-  background: linear-gradient(90deg, #885ebe, #fbbc04, #ea4335);
+  background: linear-gradient(90deg, #a78bfa, #fbbc04, #ea4335);
   border-radius: 2px;
   transition: width 0.3s ease;
   width: 20%;
@@ -335,8 +397,8 @@ input[type="checkbox"] {
 
   input[type="text"]:focus,
   select:focus {
-    border-color: #885ebe;
-    box-shadow: 0 0 0 2px rgba(136, 94, 190, 0.2);
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 2px rgba(168, 139, 220, 0.2);
   }
 
   .btn-secondary {
@@ -386,3 +448,68 @@ input[type="checkbox"] {
   }
 }
 */
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(168, 139, 220, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(168, 139, 220, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+  box-shadow: 0 3px 6px rgba(168, 139, 220, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-corner {
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f8f9fa;
+}
+
+/* Custom scrollbar for specific containers */
+.scrollable-container {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f8f9fa;
+}
+
+.scrollable-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background: rgba(168, 139, 220, 0.05);
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background: rgba(168, 139, 220, 0.6);
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 139, 220, 0.8);
+}

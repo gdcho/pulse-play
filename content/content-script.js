@@ -1105,6 +1105,12 @@ class VideoSpeedController {
    */
   showSpeedIndicator(speed) {
     try {
+      // Validate input parameters
+      if (typeof speed !== "number" || isNaN(speed)) {
+        console.warn("Video Speed Hotkey: Invalid speed parameter:", speed);
+        speed = 1.0; // Default fallback
+      }
+
       // Skip if indicators are disabled in settings
       if (
         !this.settings ||
@@ -1150,7 +1156,20 @@ class VideoSpeedController {
       this.positionIndicatorOverVideo(indicator);
 
       // Add to page
-      document.body.appendChild(indicator);
+      if (document.body) {
+        document.body.appendChild(indicator);
+      } else {
+        console.warn(
+          "Video Speed Hotkey: Document body not available, cannot add indicator",
+        );
+        return false;
+      }
+
+      // Verify indicator was added successfully
+      if (!document.contains(indicator)) {
+        console.error("Video Speed Hotkey: Failed to add indicator to DOM");
+        return false;
+      }
 
       // Debug: Check if indicator is in DOM
       console.log("Video Speed Hotkey: Video overlay indicator added to DOM:", {
@@ -1161,34 +1180,72 @@ class VideoSpeedController {
       });
 
       // Ensure CSS rules are added before trying to animate
-      this.ensureIndicatorCSS();
+      try {
+        this.ensureIndicatorCSS();
+      } catch (cssError) {
+        console.warn("Video Speed Hotkey: Error ensuring CSS rules:", cssError);
+        // Continue anyway - we have fallback styles
+      }
 
       // Trigger fade-in animation with fallback
-      requestAnimationFrame(() => {
-        indicator.classList.add("video-speed-hotkey-indicator-visible");
+      try {
+        requestAnimationFrame(() => {
+          indicator.classList.add("video-speed-hotkey-indicator-visible");
 
-        // Fallback: if CSS animation doesn't work, force visibility
-        setTimeout(() => {
-          if (
-            indicator.style.opacity === "0" ||
-            getComputedStyle(indicator).opacity === "0"
-          ) {
-            console.log(
-              "Video Speed Hotkey: CSS animation failed, forcing visibility",
-            );
-            indicator.style.opacity = "1";
-            indicator.style.background =
-              "linear-gradient(135deg, #885ebe 0%, #9b77cb 50%, #bba4da 100%)";
-            indicator.style.border = "3px solid #885ebe";
-          }
-        }, 100);
-      });
+          // Fallback: if CSS animation doesn't work, force visibility
+          setTimeout(() => {
+            try {
+              if (
+                indicator.style.opacity === "0" ||
+                getComputedStyle(indicator).opacity === "0"
+              ) {
+                console.log(
+                  "Video Speed Hotkey: CSS animation failed, forcing visibility",
+                );
+                indicator.style.opacity = "1";
+                indicator.style.background =
+                  "linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)";
+                indicator.style.border = "3px solid #a78bfa";
+              }
+            } catch (fallbackError) {
+              console.warn(
+                "Video Speed Hotkey: Error in animation fallback:",
+                fallbackError,
+              );
+            }
+          }, 100);
+        });
+      } catch (animationError) {
+        console.warn(
+          "Video Speed Hotkey: Error setting up animation:",
+          animationError,
+        );
+        // Force visibility immediately as fallback
+        indicator.style.opacity = "1";
+      }
 
       // Set up auto-hide timer if configured
-      this.setupAutoHideTimer();
+      try {
+        this.setupAutoHideTimer();
+      } catch (timerError) {
+        console.warn(
+          "Video Speed Hotkey: Error setting up auto-hide timer:",
+          timerError,
+        );
+        // Continue anyway - timer is not critical
+      }
 
       // Monitor video position changes (for scrolling, resizing, etc.)
-      this.setupVideoPositionMonitoring(indicator, activeVideo);
+      if (this.lastActiveVideo && document.contains(this.lastActiveVideo)) {
+        this.setupVideoPositionMonitoring(indicator, this.lastActiveVideo);
+        console.log(
+          "Video Speed Hotkey: Video position monitoring set up for active video",
+        );
+      } else {
+        console.log(
+          "Video Speed Hotkey: No active video available for position monitoring",
+        );
+      }
 
       console.log(
         `Video Speed Hotkey: Video overlay speed indicator shown (${speedText})`,
@@ -1268,7 +1325,7 @@ class VideoSpeedController {
       position: "fixed",
       zIndex: "2147483647", // Maximum z-index to ensure visibility
       background:
-        "linear-gradient(135deg, #885ebe 0%, #9b77cb 50%, #bba4da 100%)", // Purple gradient background
+        "linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)", // Purple gradient background
       color: "white",
       padding: "24px 28px",
       borderRadius: "16px",
@@ -1281,13 +1338,13 @@ class VideoSpeedController {
       opacity: "0",
       transition: "all 0.3s ease-in-out",
       boxShadow:
-        "0 12px 40px rgba(136, 94, 190, 0.9), 0 0 0 3px #885ebe, 0 0 20px rgba(136, 94, 190, 0.3)",
+        "0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3)",
       minWidth: "100px",
       textAlign: "center",
       whiteSpace: "nowrap",
       backdropFilter: "blur(15px)",
       WebkitBackdropFilter: "blur(15px)",
-      border: "3px solid #885ebe",
+      border: "3px solid #a78bfa",
       textShadow: "0 2px 4px rgba(0, 0, 0, 0.8)",
       display: "flex",
       flexDirection: "column",
@@ -1429,23 +1486,59 @@ class VideoSpeedController {
    */
   setupVideoPositionMonitoring(indicator, video) {
     try {
+      // Validate parameters
+      if (!indicator || !video) {
+        console.warn(
+          "Video Speed Hotkey: Invalid parameters for video position monitoring",
+        );
+        return;
+      }
+
       // Create a ResizeObserver to watch for video size changes
       if (window.ResizeObserver) {
-        const resizeObserver = new ResizeObserver(() => {
-          if (indicator && document.contains(indicator)) {
-            this.positionIndicatorOverVideo(indicator);
-          }
-        });
-        resizeObserver.observe(video);
+        try {
+          const resizeObserver = new ResizeObserver(() => {
+            try {
+              if (indicator && document.contains(indicator)) {
+                this.positionIndicatorOverVideo(indicator);
+              }
+            } catch (resizeCallbackError) {
+              console.warn(
+                "Video Speed Hotkey: Error in resize observer callback:",
+                resizeCallbackError,
+              );
+            }
+          });
 
-        // Store observer reference for cleanup
-        indicator.dataset.resizeObserver = resizeObserver;
+          resizeObserver.observe(video);
+
+          // Store observer reference for cleanup
+          Object.defineProperty(indicator, "_resizeObserver", {
+            value: resizeObserver,
+            writable: true,
+            configurable: true,
+          });
+
+          console.log("Video Speed Hotkey: ResizeObserver set up successfully");
+        } catch (resizeError) {
+          console.warn(
+            "Video Speed Hotkey: Error setting up ResizeObserver:",
+            resizeError,
+          );
+        }
       }
 
       // Monitor scroll events on the page
       const handleScroll = () => {
-        if (indicator && document.contains(indicator)) {
-          this.positionIndicatorOverVideo(indicator);
+        try {
+          if (indicator && document.contains(indicator)) {
+            this.positionIndicatorOverVideo(indicator);
+          }
+        } catch (scrollCallbackError) {
+          console.warn(
+            "Video Speed Hotkey: Error in scroll handler callback:",
+            scrollCallbackError,
+          );
         }
       };
 
@@ -1455,15 +1548,38 @@ class VideoSpeedController {
         document.documentElement,
         document.body,
       ];
+
+      let scrollListenersAdded = 0;
       scrollableElements.forEach((element) => {
-        element.addEventListener("scroll", handleScroll, { passive: true });
+        try {
+          if (element && typeof element.addEventListener === "function") {
+            element.addEventListener("scroll", handleScroll, { passive: true });
+            scrollListenersAdded++;
+          }
+        } catch (elementError) {
+          console.warn(
+            "Video Speed Hotkey: Error adding scroll listener to element:",
+            elementError,
+          );
+        }
       });
 
-      // Store scroll handler reference for cleanup
-      indicator.dataset.scrollHandler = handleScroll;
-      indicator.dataset.scrollElements = scrollableElements;
+      // Store scroll handler reference and elements for cleanup
+      // Use non-enumerable properties to avoid dataset string conversion issues
+      Object.defineProperty(indicator, "_scrollHandler", {
+        value: handleScroll,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(indicator, "_scrollElements", {
+        value: scrollableElements,
+        writable: true,
+        configurable: true,
+      });
 
-      console.log("Video Speed Hotkey: Video position monitoring set up");
+      console.log(
+        `Video Speed Hotkey: Video position monitoring set up with ${scrollListenersAdded} scroll listeners`,
+      );
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error setting up video position monitoring:",
@@ -1478,28 +1594,79 @@ class VideoSpeedController {
    */
   cleanupVideoPositionMonitoring(indicator) {
     try {
+      // Validate indicator parameter
+      if (!indicator || typeof indicator !== "object") {
+        console.warn(
+          "Video Speed Hotkey: Invalid indicator parameter for cleanup",
+        );
+        return;
+      }
+
       // Clean up ResizeObserver
-      if (indicator.dataset.resizeObserver) {
-        const resizeObserver = indicator.dataset.resizeObserver;
-        if (resizeObserver && typeof resizeObserver.disconnect === "function") {
-          resizeObserver.disconnect();
+      if (indicator._resizeObserver) {
+        try {
+          const resizeObserver = indicator._resizeObserver;
+          if (
+            resizeObserver &&
+            typeof resizeObserver.disconnect === "function"
+          ) {
+            resizeObserver.disconnect();
+            console.log("Video Speed Hotkey: ResizeObserver disconnected");
+          }
+        } catch (resizeError) {
+          console.warn(
+            "Video Speed Hotkey: Error disconnecting ResizeObserver:",
+            resizeError,
+          );
+        } finally {
+          delete indicator._resizeObserver;
         }
-        delete indicator.dataset.resizeObserver;
       }
 
       // Clean up scroll handlers
-      if (indicator.dataset.scrollHandler && indicator.dataset.scrollElements) {
-        const scrollHandler = indicator.dataset.scrollHandler;
-        const scrollElements = indicator.dataset.scrollElements;
+      if (indicator._scrollHandler && indicator._scrollElements) {
+        try {
+          const scrollHandler = indicator._scrollHandler;
+          const scrollElements = indicator._scrollElements;
 
-        scrollElements.forEach((element) => {
-          if (element && typeof element.removeEventListener === "function") {
-            element.removeEventListener("scroll", scrollHandler);
+          // Ensure scrollElements is an array before calling forEach
+          if (Array.isArray(scrollElements)) {
+            let removedCount = 0;
+            scrollElements.forEach((element) => {
+              try {
+                if (
+                  element &&
+                  typeof element.removeEventListener === "function"
+                ) {
+                  element.removeEventListener("scroll", scrollHandler);
+                  removedCount++;
+                }
+              } catch (elementError) {
+                console.warn(
+                  "Video Speed Hotkey: Error removing scroll listener from element:",
+                  elementError,
+                );
+              }
+            });
+            console.log(
+              `Video Speed Hotkey: Removed ${removedCount} scroll listeners`,
+            );
+          } else {
+            console.warn(
+              "Video Speed Hotkey: scrollElements is not an array during cleanup:",
+              scrollElements,
+            );
           }
-        });
-
-        delete indicator.dataset.scrollHandler;
-        delete indicator.dataset.scrollElements;
+        } catch (scrollError) {
+          console.warn(
+            "Video Speed Hotkey: Error cleaning up scroll handlers:",
+            scrollError,
+          );
+        } finally {
+          // Clean up the custom properties
+          delete indicator._scrollHandler;
+          delete indicator._scrollElements;
+        }
       }
 
       console.log("Video Speed Hotkey: Video position monitoring cleaned up");
@@ -1516,12 +1683,92 @@ class VideoSpeedController {
    */
   ensureIndicatorCSS() {
     try {
+      // Check if CSS injection is supported in this environment
+      if (!this.isCSSInjectionSupported()) {
+        console.warn(
+          "Video Speed Hotkey: CSS injection not supported in this environment, using fallback",
+        );
+        this.addIndicatorCSSFallback();
+        return;
+      }
+
       const styleSheet = this.getOrCreateStyleSheet();
       if (styleSheet) {
         this.addIndicatorCSSRules(styleSheet);
+      } else {
+        console.warn(
+          "Video Speed Hotkey: Could not create or get style sheet for indicator CSS, using fallback",
+        );
+        this.addIndicatorCSSFallback();
       }
     } catch (error) {
       console.error("Video Speed Hotkey: Error ensuring indicator CSS:", error);
+      // Try fallback method
+      try {
+        this.addIndicatorCSSFallback();
+      } catch (fallbackError) {
+        console.error(
+          "Video Speed Hotkey: Both primary and fallback CSS methods failed:",
+          fallbackError,
+        );
+      }
+    }
+  }
+
+  /**
+   * Check if the current page environment supports CSS injection
+   * @returns {boolean} True if CSS injection is supported
+   */
+  isCSSInjectionSupported() {
+    try {
+      // Check if we're in an iframe (which might have restrictions)
+      if (window !== window.top) {
+        console.warn(
+          "Video Speed Hotkey: Running in iframe - CSS injection may be restricted",
+        );
+        return false;
+      }
+
+      // Check if document is in a valid state
+      if (!document || !document.createElement) {
+        console.warn(
+          "Video Speed Hotkey: Document not in valid state for CSS injection",
+        );
+        return false;
+      }
+
+      // Check if we can create and append elements
+      const testElement = document.createElement("div");
+      if (!testElement) {
+        console.warn("Video Speed Hotkey: Cannot create DOM elements");
+        return false;
+      }
+
+      // Check for restrictive Content Security Policy
+      const metaCSP = document.querySelector(
+        'meta[http-equiv="Content-Security-Policy"]',
+      );
+      if (metaCSP && metaCSP.content) {
+        const cspContent = metaCSP.content.toLowerCase();
+        if (
+          cspContent.includes("style-src") &&
+          cspContent.includes("'unsafe-inline'") === false &&
+          cspContent.includes("'self'") === false
+        ) {
+          console.warn(
+            "Video Speed Hotkey: Restrictive CSP detected - CSS injection may be blocked",
+          );
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.warn(
+        "Video Speed Hotkey: Error checking CSS injection support:",
+        error,
+      );
+      return false;
     }
   }
 
@@ -1543,10 +1790,31 @@ class VideoSpeedController {
         // Add to document head
         if (document.head) {
           document.head.appendChild(styleElement);
-        } else {
+        } else if (document.body) {
           // Fallback: add to body if head is not available
           document.body.appendChild(styleElement);
+        } else {
+          console.warn(
+            "Video Speed Hotkey: Neither document.head nor document.body available",
+          );
+          return null;
         }
+      }
+
+      // Validate that the style element has a sheet
+      if (!styleElement.sheet) {
+        console.warn(
+          "Video Speed Hotkey: Style element created but sheet is not available",
+        );
+        return null;
+      }
+
+      // Additional validation for the sheet
+      if (typeof styleElement.sheet.insertRule !== "function") {
+        console.warn(
+          "Video Speed Hotkey: Style sheet does not support insertRule",
+        );
+        return null;
       }
 
       return styleElement.sheet;
@@ -1562,6 +1830,14 @@ class VideoSpeedController {
    */
   addIndicatorCSSRules(styleSheet) {
     try {
+      // Validate styleSheet parameter
+      if (!styleSheet || !styleSheet.insertRule) {
+        console.warn(
+          "Video Speed Hotkey: Invalid styleSheet provided to addIndicatorCSSRules",
+        );
+        return;
+      }
+
       // Check if rules already exist to avoid duplicates
       const existingRules = Array.from(styleSheet.cssRules || []);
       const hasVisibleRule = existingRules.some(
@@ -1572,8 +1848,24 @@ class VideoSpeedController {
         return; // Rules already added
       }
 
+      // Helper function to safely insert CSS rules
+      const safeInsertRule = (cssText, index) => {
+        try {
+          if (index >= 0 && index <= styleSheet.cssRules.length) {
+            styleSheet.insertRule(cssText, index);
+            return true;
+          } else {
+            console.warn(
+              "Video Speed Hotkey: Invalid index for CSS rule insertion:",
+              index,
+            );
+            return false;
+          }
+        } catch (ruleError) {}
+      };
+
       // Add fade-in rule
-      styleSheet.insertRule(
+      safeInsertRule(
         `
         .video-speed-hotkey-indicator-visible {
           opacity: 1 !important;
@@ -1583,7 +1875,7 @@ class VideoSpeedController {
       );
 
       // Add fade-out rule
-      styleSheet.insertRule(
+      safeInsertRule(
         `
         .video-speed-hotkey-indicator-hiding {
           opacity: 0 !important;
@@ -1594,7 +1886,7 @@ class VideoSpeedController {
       );
 
       // Add pulsing animation for the icon
-      styleSheet.insertRule(
+      safeInsertRule(
         `
         @keyframes speedPulse {
           0% { transform: scale(1); opacity: 1; }
@@ -1610,12 +1902,12 @@ class VideoSpeedController {
       );
 
       // Add base indicator styles as backup using vibrant color scheme with logo
-      styleSheet.insertRule(
+      safeInsertRule(
         `
         .video-speed-hotkey-indicator {
           position: fixed !important;
           z-index: 2147483647 !important;
-          background: linear-gradient(135deg, #885ebe 0%, #9b77cb 50%, #bba4da 100%) !important;
+          background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%) !important;
           color: white !important;
           padding: 24px 28px !important;
           border-radius: 16px !important;
@@ -1626,19 +1918,17 @@ class VideoSpeedController {
           user-select: none !important;
           opacity: 0 !important;
           transition: all 0.3s ease-in-out !important;
-          box-shadow: 0 12px 40px rgba(136, 94, 190, 0.9), 0 0 0 3px #885ebe, 0 0 20px rgba(136, 94, 190, 0.3) !important;
+          box-shadow: 0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3) !important;
           min-width: 100px !important;
           text-align: center !important;
           white-space: nowrap !important;
-          border: 3px solid #885ebe !important;
+          border: 3px solid #a78bfa !important;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
           display: flex !important;
           flex-direction: column !important;
           align-items: center !important;
           gap: 12px !important;
         }
-
-
 
         .video-speed-hotkey-indicator .speed-icon {
           font-size: 28px !important;
@@ -1657,8 +1947,6 @@ class VideoSpeedController {
           animation: textGlow 2s ease-in-out infinite alternate !important;
         }
 
-
-
         @keyframes textGlow {
           0% { text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); }
           100% { text-shadow: 0 2px 8px rgba(0, 0, 0, 1), 0 0 15px rgba(136, 94, 190, 0.7); }
@@ -1666,8 +1954,134 @@ class VideoSpeedController {
       `,
         styleSheet.cssRules.length,
       );
+
+      console.log("Video Speed Hotkey: CSS rules added successfully");
     } catch (error) {
       console.error("Video Speed Hotkey: Error adding CSS rules:", error);
+      // Fallback: try to add styles using a different method
+      this.addIndicatorCSSFallback();
+    }
+  }
+
+  /**
+   * Fallback method for adding indicator CSS when insertRule fails
+   */
+  addIndicatorCSSFallback() {
+    try {
+      // Check if fallback styles already exist
+      if (document.getElementById("video-speed-hotkey-styles-fallback")) {
+        return;
+      }
+
+      // Create a new style element with inline CSS
+      const fallbackStyle = document.createElement("style");
+      fallbackStyle.id = "video-speed-hotkey-styles-fallback";
+      fallbackStyle.textContent = `
+        .video-speed-hotkey-indicator-visible {
+          opacity: 1 !important;
+        }
+        .video-speed-hotkey-indicator-hiding {
+          opacity: 0 !important;
+          transition: opacity 0.2s ease-in-out !important;
+        }
+        @keyframes speedPulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.8; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .video-speed-hotkey-indicator .speed-icon {
+          animation: speedPulse 1.5s ease-in-out infinite !important;
+        }
+        .video-speed-hotkey-indicator {
+          position: fixed !important;
+          z-index: 2147483647 !important;
+          background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%) !important;
+          color: white !important;
+          padding: 24px 28px !important;
+          border-radius: 16px !important;
+          font-size: 16px !important;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+          font-weight: 600 !important;
+          pointer-events: none !important;
+          user-select: none !important;
+          opacity: 0 !important;
+          transition: all 0.3s ease-in-out !important;
+          box-shadow: 0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3) !important;
+          min-width: 100px !important;
+          text-align: center !important;
+          white-space: nowrap !important;
+          border: 3px solid #a78bfa !important;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: 12px !important;
+        }
+        .video-speed-hotkey-indicator .speed-icon {
+          font-size: 28px !important;
+          line-height: 1 !important;
+          color: #fb5354 !important;
+          text-shadow: 0 0 20px rgba(251, 83, 84, 0.8) !important;
+          animation: speedPulse 1.5s ease-in-out infinite !important;
+        }
+        .video-speed-hotkey-indicator .speed-text {
+          font-size: 20px !important;
+          font-weight: 700 !important;
+          color: white !important;
+          letter-spacing: 1px !important;
+          text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+          animation: textGlow 2s ease-in-out infinite alternate !important;
+        }
+        @keyframes textGlow {
+          0% { text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); }
+          100% { text-shadow: 0 2px 8px rgba(0, 0, 0, 1), 0 0 15px rgba(136, 94, 190, 0.7); }
+        }
+
+        /* Custom Scrollbar Styling for Video Speed Hotkey Extension */
+        .video-speed-hotkey-scrollbar::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+
+        .video-speed-hotkey-scrollbar::-webkit-scrollbar-track {
+          background: rgba(168, 139, 220, 0.1);
+          border-radius: 5px;
+        }
+
+        .video-speed-hotkey-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+          border-radius: 5px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .video-speed-hotkey-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #9333ea 0%, #a855f7 100%);
+        }
+
+        .video-speed-hotkey-scrollbar::-webkit-scrollbar-corner {
+          background: rgba(168, 139, 220, 0.05);
+        }
+
+        /* Firefox scrollbar styling */
+        .video-speed-hotkey-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #a78bfa rgba(168, 139, 220, 0.1);
+        }
+      `;
+
+      // Add to document
+      if (document.head) {
+        document.head.appendChild(fallbackStyle);
+      } else if (document.body) {
+        document.body.appendChild(fallbackStyle);
+      }
+
+      console.log("Video Speed Hotkey: Fallback CSS styles added successfully");
+    } catch (fallbackError) {
+      console.error(
+        "Video Speed Hotkey: Error adding fallback CSS styles:",
+        fallbackError,
+      );
     }
   }
 
@@ -2309,6 +2723,22 @@ class VideoSpeedController {
         for (let i = 1; i < styleElements.length; i++) {
           if (styleElements[i].parentNode) {
             styleElements[i].parentNode.removeChild(styleElements[i]);
+            cleanedCount++;
+          }
+        }
+      }
+
+      // Clean up orphaned fallback style elements
+      const fallbackStyleElements = document.querySelectorAll(
+        "#video-speed-hotkey-styles-fallback",
+      );
+      if (fallbackStyleElements.length > 1) {
+        // Remove all but the first one
+        for (let i = 1; i < fallbackStyleElements.length; i++) {
+          if (fallbackStyleElements[i].parentNode) {
+            fallbackStyleElements[i].parentNode.removeChild(
+              fallbackStyleElements[i],
+            );
             cleanedCount++;
           }
         }
