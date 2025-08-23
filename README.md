@@ -188,3 +188,9 @@ pulse-play/
 ---
 
 **Ready to revolutionize your video experience? Download Pulse Play today!**
+
+---
+
+## 🏷️ **Footer**
+
+Made with ❤️ by [rj labs](https://github.com/rj-labs-co) | [☕ Buy me a coffee](https://www.buymeacoffee.com/rjsgml) - Support my work

@@ -1146,7 +1146,7 @@ class VideoSpeedController {
         speed,
       );
       indicator.innerHTML = `
-        <div class="speed-text">▶▶ ${speedText}</div>
+        <div class="speed-text">${speedText} ▶▶</div>
       `;
 
       // Apply base styles

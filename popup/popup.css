@@ -39,14 +39,13 @@ body {
 }
 
 .container {
-  padding: 12px;
+  padding: 8px;
 }
 
 header {
   text-align: center;
   margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e1e5e9;
+
   position: relative;
 }
 
@@ -81,6 +80,7 @@ h1 {
   position: absolute;
   top: 0;
   right: 0;
+  padding-top: 6px;
 }
 
 .theme-toggle {
@@ -660,4 +660,121 @@ body.dark .preview-bar {
 body.dark h1 {
   color: #e8eaed;
   text-shadow: 0 2px 4px rgba(168, 139, 220, 0.3);
+}
+
+/* Footer Styles */
+.app-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e5e9;
+  text-align: center;
+}
+
+.footer-content {
+  padding: 0 8px;
+}
+
+.footer-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.heart {
+  color: #ff5757;
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.footer-divider {
+  color: #666;
+  font-size: 12px;
+}
+
+.link-secondary {
+  color: #f8fafc;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.link-secondary:hover {
+  color: #e2e8f0;
+  text-decoration: underline;
+}
+
+/* Dark mode footer styles */
+body.dark .app-footer {
+  border-top-color: #475569;
+}
+
+body.dark .footer-text {
+  color: #94a3b8;
+}
+
+body.dark .footer-divider {
+  color: #64748b;
+}
+
+body.dark .link-secondary {
+  color: #a78bfa;
+}
+
+body.dark .link-secondary:hover {
+  color: #c4b5fd;
+}
+
+/* Ensure footer accessibility and compatibility */
+.app-footer a {
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .footer-text {
+    color: #333;
+  }
+
+  .footer-divider {
+    color: #666;
+  }
+
+  .link-secondary {
+    color: #0066cc;
+  }
+
+  body.dark .footer-text {
+    color: #e8eaed;
+  }
+
+  body.dark .footer-divider {
+    color: #bdc1c6;
+  }
+
+  body.dark .link-secondary {
+    color: #8ab4f8;
+  }
 }
