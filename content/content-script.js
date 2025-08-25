@@ -2,8 +2,6 @@
 // Content script for Video Speed Hotkey extension
 // Injected into web pages to handle video speed manipulation
 
-console.log("Video Speed Hotkey: Content script loaded");
-
 // Placeholder for VideoSpeedController class
 // This will be implemented in subsequent tasks
 
@@ -57,8 +55,6 @@ class VideoSpeedController {
     // Error logging configuration
     this.errorLog = [];
     this.maxErrorLogSize = 50;
-
-    console.log("Video Speed Hotkey: VideoSpeedController initialized");
   }
 
   /**
@@ -67,10 +63,6 @@ class VideoSpeedController {
    */
   refreshSettings(newSettings) {
     this.settings = newSettings;
-    console.log(
-      "Video Speed Hotkey: Settings refreshed in VideoSpeedController:",
-      newSettings,
-    );
   }
 
   /**
@@ -100,9 +92,6 @@ class VideoSpeedController {
       // Update tracked videos map
       this.updateTrackedVideos(validVideos);
 
-      console.log(
-        `Video Speed Hotkey: Detected ${validVideos.length} valid video(s)`,
-      );
       return validVideos;
     } catch (error) {
       console.error("Video Speed Hotkey: Error detecting videos:", error);
@@ -372,7 +361,6 @@ class VideoSpeedController {
         this.trackedVideos.get(activeVideo).lastInteraction = Date.now();
       }
 
-      console.log("Video Speed Hotkey: Active video determined:", activeVideo);
       return activeVideo;
     } catch (error) {
       console.error("Video Speed Hotkey: Error getting active video:", error);
@@ -431,9 +419,6 @@ class VideoSpeedController {
       const activeVideo = this.getActiveVideo();
 
       if (!activeVideo) {
-        console.log(
-          "Video Speed Hotkey: No active video found for speed boost",
-        );
         return false;
       }
 
@@ -451,7 +436,6 @@ class VideoSpeedController {
 
       // Don't apply if already speed boosted
       if (videoState.isSpeedBoosted) {
-        console.log("Video Speed Hotkey: Speed boost already active");
         return true;
       }
 
@@ -475,9 +459,6 @@ class VideoSpeedController {
       activeVideo.playbackRate = multiplier;
       videoState.isSpeedBoosted = true;
 
-      console.log(
-        `Video Speed Hotkey: Speed boost applied - ${videoState.originalRate}x -> ${multiplier}x`,
-      );
       return true;
     } catch (error) {
       console.error("Video Speed Hotkey: Error applying speed boost:", error);
@@ -494,9 +475,6 @@ class VideoSpeedController {
       const activeVideo = this.getActiveVideo();
 
       if (!activeVideo) {
-        console.log(
-          "Video Speed Hotkey: No active video found for speed restoration",
-        );
         return false;
       }
 
@@ -514,7 +492,6 @@ class VideoSpeedController {
 
       // Don't restore if not speed boosted
       if (!videoState.isSpeedBoosted) {
-        console.log("Video Speed Hotkey: No speed boost active to restore");
         return true;
       }
 
@@ -522,9 +499,6 @@ class VideoSpeedController {
       activeVideo.playbackRate = videoState.originalRate;
       videoState.isSpeedBoosted = false;
 
-      console.log(
-        `Video Speed Hotkey: Speed restored to ${videoState.originalRate}x`,
-      );
       return true;
     } catch (error) {
       console.error("Video Speed Hotkey: Error restoring speed:", error);
@@ -584,9 +558,6 @@ class VideoSpeedController {
       // Hide speed indicator when resetting all speeds
       this.hideSpeedIndicator();
 
-      console.log(
-        `Video Speed Hotkey: Reset ${resetCount} video(s) to original speed`,
-      );
       return resetCount;
     } catch (error) {
       this.logError("Error resetting all speeds", error);
@@ -624,9 +595,6 @@ class VideoSpeedController {
       // Initialize DOM mutation observer for video tracking
       this.initializeMutationObserver();
 
-      console.log(
-        "Video Speed Hotkey: Hotkey event listeners and DOM observer initialized",
-      );
       return true;
     } catch (error) {
       console.error(
@@ -675,10 +643,6 @@ class VideoSpeedController {
       Object.keys(this.eventListeners).forEach((key) => {
         this.eventListeners[key] = null;
       });
-
-      console.log(
-        "Video Speed Hotkey: Hotkey event listeners and DOM observer removed",
-      );
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error removing hotkey listeners:",
@@ -710,16 +674,6 @@ class VideoSpeedController {
 
       // Update modifier state
       this.updateModifierState(event);
-
-      // Debug logging for backquote troubleshooting
-      if (event.key === "`" || event.key === "~") {
-        console.log("Video Speed Hotkey: Backquote keydown detected -", {
-          key: event.key,
-          code: event.code,
-          settings: this.settings.hotkey,
-          isConfigured: this.isConfiguredHotkey(event),
-        });
-      }
 
       // Check if this matches our configured hotkey
       if (this.isConfiguredHotkey(event)) {
@@ -778,9 +732,6 @@ class VideoSpeedController {
       // Reset speed boost when window loses focus
       if (this.hotkeyState.isPressed) {
         this.deactivateSpeedBoost();
-        console.log(
-          "Video Speed Hotkey: Speed boost deactivated due to window blur",
-        );
       } else {
         // Also hide indicator if it's showing but no speed boost is active
         this.hideSpeedIndicator();
@@ -791,8 +742,6 @@ class VideoSpeedController {
 
       // Clear any pending timers
       this.clearAutoHideTimer();
-
-      console.log("Video Speed Hotkey: Window blur handled - all speeds reset");
     } catch (error) {
       console.error("Video Speed Hotkey: Error in window blur handler:", error);
     }
@@ -811,10 +760,6 @@ class VideoSpeedController {
 
       // Clear any stale indicators
       this.hideSpeedIndicator();
-
-      console.log(
-        "Video Speed Hotkey: Window focus handled - state reset and videos re-detected",
-      );
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error in window focus handler:",
@@ -833,9 +778,6 @@ class VideoSpeedController {
         if (this.hotkeyState.isPressed) {
           // Reset speed boost when tab becomes hidden
           this.deactivateSpeedBoost();
-          console.log(
-            "Video Speed Hotkey: Speed boost deactivated due to tab becoming hidden",
-          );
         }
 
         // Reset all video speeds to ensure clean state
@@ -844,8 +786,6 @@ class VideoSpeedController {
         // Hide indicator and clear timers
         this.hideSpeedIndicator();
         this.clearAutoHideTimer();
-
-        console.log("Video Speed Hotkey: Tab hidden - all speeds reset");
       } else {
         // Tab became visible
         this.resetHotkeyState();
@@ -855,10 +795,6 @@ class VideoSpeedController {
 
         // Clean up any stale DOM elements
         this.cleanupStaleElements();
-
-        console.log(
-          "Video Speed Hotkey: Tab visible - state reset and cleanup performed",
-        );
       }
     } catch (error) {
       console.error(
@@ -927,19 +863,6 @@ class VideoSpeedController {
     // Check main key
     const eventKey = this.normalizeKey(event.key);
     const configKey = this.normalizeKey(config.key);
-
-    // Debug logging for backquote troubleshooting
-    if (event.key === "`" || event.key === "~" || config.key === "Backquote") {
-      console.log("Video Speed Hotkey: Backquote debug -", {
-        eventKey: event.key,
-        normalizedEventKey: eventKey,
-        configKey: config.key,
-        normalizedConfigKey: configKey,
-        match: eventKey === configKey,
-        modifiers: this.hotkeyState.modifiers,
-        requiredModifiers: config.modifiers || [],
-      });
-    }
 
     if (eventKey !== configKey) {
       return false;
@@ -1018,21 +941,12 @@ class VideoSpeedController {
 
       // Apply speed boost using configured multiplier
       const multiplier = this.settings.speedMultiplier || 2.0;
-      console.log(
-        "Video Speed Hotkey: Using speed multiplier:",
-        multiplier,
-        "from settings:",
-        this.settings,
-      );
+
       const success = this.applySpeedBoost(multiplier);
 
       if (success) {
         // Show speed indicator
         this.showSpeedIndicator(multiplier);
-
-        console.log(
-          `Video Speed Hotkey: Speed boost activated (${multiplier}x)`,
-        );
       } else {
         // Reset state if activation failed
         this.resetHotkeyState();
@@ -1060,8 +974,6 @@ class VideoSpeedController {
       if (success) {
         // Hide speed indicator
         this.hideSpeedIndicator();
-
-        console.log("Video Speed Hotkey: Speed boost deactivated");
       }
 
       // Reset hotkey state
@@ -1117,7 +1029,6 @@ class VideoSpeedController {
         !this.settings.ui ||
         !this.settings.ui.showIndicator
       ) {
-        console.log("Video Speed Hotkey: Speed indicator disabled in settings");
         return false;
       }
 
@@ -1139,12 +1050,7 @@ class VideoSpeedController {
 
       // Create content with >> icon and speed
       const speedText = speed ? `${speed.toFixed(1)}x` : "2.0x";
-      console.log(
-        "Video Speed Hotkey: Showing speed indicator with speed:",
-        speedText,
-        "for input speed:",
-        speed,
-      );
+
       indicator.innerHTML = `
         <div class="speed-text">${speedText} ▶▶</div>
       `;
@@ -1171,14 +1077,6 @@ class VideoSpeedController {
         return false;
       }
 
-      // Debug: Check if indicator is in DOM
-      console.log("Video Speed Hotkey: Video overlay indicator added to DOM:", {
-        element: indicator,
-        parent: indicator.parentNode,
-        styles: indicator.style.cssText,
-        computedStyles: window.getComputedStyle(indicator),
-      });
-
       // Ensure CSS rules are added before trying to animate
       try {
         this.ensureIndicatorCSS();
@@ -1199,9 +1097,6 @@ class VideoSpeedController {
                 indicator.style.opacity === "0" ||
                 getComputedStyle(indicator).opacity === "0"
               ) {
-                console.log(
-                  "Video Speed Hotkey: CSS animation failed, forcing visibility",
-                );
                 indicator.style.opacity = "1";
                 indicator.style.background =
                   "linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)";
@@ -1238,18 +1133,9 @@ class VideoSpeedController {
       // Monitor video position changes (for scrolling, resizing, etc.)
       if (this.lastActiveVideo && document.contains(this.lastActiveVideo)) {
         this.setupVideoPositionMonitoring(indicator, this.lastActiveVideo);
-        console.log(
-          "Video Speed Hotkey: Video position monitoring set up for active video",
-        );
       } else {
-        console.log(
-          "Video Speed Hotkey: No active video available for position monitoring",
-        );
       }
 
-      console.log(
-        `Video Speed Hotkey: Video overlay speed indicator shown (${speedText})`,
-      );
       return true;
     } catch (error) {
       console.error(
@@ -1307,7 +1193,6 @@ class VideoSpeedController {
         }, 200); // Match CSS transition duration
       }
 
-      console.log("Video Speed Hotkey: Speed indicator hidden");
       return true;
     } catch (error) {
       console.error("Video Speed Hotkey: Error hiding speed indicator:", error);
@@ -1458,17 +1343,6 @@ class VideoSpeedController {
       // Set common positioning styles
       indicator.style.position = "fixed";
       indicator.style.zIndex = "2147483647";
-
-      console.log("Video Speed Hotkey: Positioned indicator over video:", {
-        videoRect: videoRect,
-        position: position,
-        offset: offset,
-        finalPosition: {
-          top: indicator.style.top,
-          left: indicator.style.left,
-          transform: indicator.style.transform,
-        },
-      });
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error positioning indicator over video:",
@@ -1518,8 +1392,6 @@ class VideoSpeedController {
             writable: true,
             configurable: true,
           });
-
-          console.log("Video Speed Hotkey: ResizeObserver set up successfully");
         } catch (resizeError) {
           console.warn(
             "Video Speed Hotkey: Error setting up ResizeObserver:",
@@ -1576,10 +1448,6 @@ class VideoSpeedController {
         writable: true,
         configurable: true,
       });
-
-      console.log(
-        `Video Speed Hotkey: Video position monitoring set up with ${scrollListenersAdded} scroll listeners`,
-      );
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error setting up video position monitoring:",
@@ -1611,7 +1479,6 @@ class VideoSpeedController {
             typeof resizeObserver.disconnect === "function"
           ) {
             resizeObserver.disconnect();
-            console.log("Video Speed Hotkey: ResizeObserver disconnected");
           }
         } catch (resizeError) {
           console.warn(
@@ -1648,9 +1515,6 @@ class VideoSpeedController {
                 );
               }
             });
-            console.log(
-              `Video Speed Hotkey: Removed ${removedCount} scroll listeners`,
-            );
           } else {
             console.warn(
               "Video Speed Hotkey: scrollElements is not an array during cleanup:",
@@ -1668,8 +1532,6 @@ class VideoSpeedController {
           delete indicator._scrollElements;
         }
       }
-
-      console.log("Video Speed Hotkey: Video position monitoring cleaned up");
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error cleaning up video position monitoring:",
@@ -1954,8 +1816,6 @@ class VideoSpeedController {
       `,
         styleSheet.cssRules.length,
       );
-
-      console.log("Video Speed Hotkey: CSS rules added successfully");
     } catch (error) {
       console.error("Video Speed Hotkey: Error adding CSS rules:", error);
       // Fallback: try to add styles using a different method
@@ -2075,8 +1935,6 @@ class VideoSpeedController {
       } else if (document.body) {
         document.body.appendChild(fallbackStyle);
       }
-
-      console.log("Video Speed Hotkey: Fallback CSS styles added successfully");
     } catch (fallbackError) {
       console.error(
         "Video Speed Hotkey: Error adding fallback CSS styles:",
@@ -2608,7 +2466,6 @@ class VideoSpeedController {
       // Reset auto-hide timer since indicator was updated
       this.setupAutoHideTimer();
 
-      console.log(`Video Speed Hotkey: Speed indicator updated (${speedText})`);
       return true;
     } catch (error) {
       console.error(
@@ -2744,12 +2601,6 @@ class VideoSpeedController {
         }
       }
 
-      if (cleanedCount > 0) {
-        console.log(
-          `Video Speed Hotkey: Cleaned up ${cleanedCount} stale DOM elements`,
-        );
-      }
-
       return cleanedCount;
     } catch (error) {
       console.error(
@@ -2776,7 +2627,6 @@ class VideoSpeedController {
       // Start observing
       this.mutationObserver.observe(document.body, this.observerConfig);
 
-      console.log("Video Speed Hotkey: DOM mutation observer initialized");
       return true;
     } catch (error) {
       console.error(
@@ -2795,7 +2645,6 @@ class VideoSpeedController {
       if (this.mutationObserver) {
         this.mutationObserver.disconnect();
         this.mutationObserver = null;
-        console.log("Video Speed Hotkey: DOM mutation observer disconnected");
       }
     } catch (error) {
       console.error(
@@ -2847,16 +2696,7 @@ class VideoSpeedController {
           (!this.lastActiveVideo || !document.contains(this.lastActiveVideo))
         ) {
           this.deactivateSpeedBoost();
-          console.log(
-            "Video Speed Hotkey: Speed boost deactivated due to video removal",
-          );
         }
-      }
-
-      // If new videos were added, we don't need to do anything immediately
-      // They will be detected on the next getActiveVideo() call
-      if (videosAdded) {
-        console.log("Video Speed Hotkey: New videos detected in DOM");
       }
     } catch (error) {
       console.error("Video Speed Hotkey: Error handling DOM mutations:", error);
@@ -2944,12 +2784,6 @@ class VideoSpeedController {
           this.lastActiveVideo = null;
         }
       }
-
-      if (videosToRemove.length > 0) {
-        console.log(
-          `Video Speed Hotkey: Cleaned up ${videosToRemove.length} removed videos from tracking`,
-        );
-      }
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error cleaning up removed videos:",
@@ -2990,10 +2824,6 @@ class VideoSpeedController {
 
       // Store listeners for cleanup
       this.videoEventListeners.set(video, listeners);
-
-      console.log(
-        "Video Speed Hotkey: Added lifecycle event listeners to video",
-      );
     } catch (error) {
       this.logError("Error adding video event listeners", error, { video });
     }
@@ -3017,10 +2847,6 @@ class VideoSpeedController {
 
       // Remove from tracking
       this.videoEventListeners.delete(video);
-
-      console.log(
-        "Video Speed Hotkey: Removed lifecycle event listeners from video",
-      );
     } catch (error) {
       this.logError("Error removing video event listeners", error, { video });
     }
@@ -3033,8 +2859,6 @@ class VideoSpeedController {
    */
   handleVideoEnded(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video ended event");
-
       // Reset speed if this video had speed boost active
       const videoState = this.trackedVideos.get(video);
       if (videoState && videoState.isSpeedBoosted) {
@@ -3045,16 +2869,11 @@ class VideoSpeedController {
         if (this.lastActiveVideo === video) {
           this.hideSpeedIndicator();
         }
-
-        console.log("Video Speed Hotkey: Speed reset due to video ending");
       }
 
       // If hotkey is still pressed but video ended, deactivate speed boost
       if (this.hotkeyState.isPressed && this.lastActiveVideo === video) {
         this.deactivateSpeedBoost();
-        console.log(
-          "Video Speed Hotkey: Speed boost deactivated due to video ending",
-        );
       }
     } catch (error) {
       this.logError("Error handling video ended event", error, { video });
@@ -3068,8 +2887,6 @@ class VideoSpeedController {
    */
   handleVideoPaused(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video paused event");
-
       // If this was the active video and speed boost is active, we might want to keep it
       // but hide the indicator to avoid confusion
       if (this.lastActiveVideo === video && this.hotkeyState.isPressed) {
@@ -3088,8 +2905,6 @@ class VideoSpeedController {
    */
   handleVideoPlay(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video play event");
-
       // Update last interaction time
       const videoState = this.trackedVideos.get(video);
       if (videoState) {
@@ -3136,7 +2951,6 @@ class VideoSpeedController {
         try {
           video.playbackRate = videoState.originalRate;
           videoState.isSpeedBoosted = false;
-          console.log("Video Speed Hotkey: Speed reset due to video error");
         } catch (resetError) {
           this.logError("Error resetting speed after video error", resetError, {
             video,
@@ -3147,9 +2961,6 @@ class VideoSpeedController {
       // If this was the active video, deactivate speed boost
       if (this.lastActiveVideo === video && this.hotkeyState.isPressed) {
         this.deactivateSpeedBoost();
-        console.log(
-          "Video Speed Hotkey: Speed boost deactivated due to video error",
-        );
       }
     } catch (error) {
       this.logError("Error handling video error event", error, { video });
@@ -3163,8 +2974,6 @@ class VideoSpeedController {
    */
   handleVideoLoadStart(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video load start event");
-
       // Reset any existing speed boost for this video
       const videoState = this.trackedVideos.get(video);
       if (videoState && videoState.isSpeedBoosted) {
@@ -3183,8 +2992,6 @@ class VideoSpeedController {
    */
   handleVideoLoadedData(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video loaded data event");
-
       // Update video state with current playback rate
       let videoState = this.trackedVideos.get(video);
       if (!videoState) {
@@ -3211,8 +3018,6 @@ class VideoSpeedController {
    */
   handleVideoCanPlay(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video can play event");
-
       // Ensure video is properly tracked
       if (!this.trackedVideos.has(video)) {
         const videoState = {
@@ -3235,10 +3040,6 @@ class VideoSpeedController {
    */
   handleVideoRateChange(video, event) {
     try {
-      console.log(
-        `Video Speed Hotkey: Video rate change event - new rate: ${video.playbackRate}`,
-      );
-
       const videoState = this.trackedVideos.get(video);
       if (videoState) {
         // If rate changed but we didn't initiate it, update our tracking
@@ -3247,9 +3048,6 @@ class VideoSpeedController {
           video.playbackRate !== videoState.originalRate
         ) {
           videoState.originalRate = video.playbackRate;
-          console.log(
-            `Video Speed Hotkey: Updated original rate to ${video.playbackRate}`,
-          );
         }
       }
     } catch (error) {
@@ -3264,8 +3062,6 @@ class VideoSpeedController {
    */
   handleVideoSeeking(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video seeking event");
-
       // Update last interaction time
       const videoState = this.trackedVideos.get(video);
       if (videoState) {
@@ -3283,8 +3079,6 @@ class VideoSpeedController {
    */
   handleVideoSeeked(video, event) {
     try {
-      console.log("Video Speed Hotkey: Video seeked event");
-
       // Update last interaction time
       const videoState = this.trackedVideos.get(video);
       if (videoState) {
@@ -3310,12 +3104,6 @@ class VideoSpeedController {
 
       // Clear the map
       this.videoEventListeners.clear();
-
-      if (removedCount > 0) {
-        console.log(
-          `Video Speed Hotkey: Removed event listeners from ${removedCount} videos`,
-        );
-      }
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error removing all video event listeners:",
@@ -3378,7 +3166,6 @@ class VideoSpeedController {
    */
   clearErrorLog() {
     this.errorLog = [];
-    console.log("Video Speed Hotkey: Error log cleared");
   }
 }
 
@@ -3406,8 +3193,6 @@ class ContentScriptManager {
    */
   async initialize() {
     try {
-      console.log("Video Speed Hotkey: Content script initializing...");
-
       // Wait for DOM to be ready
       if (document.readyState === "loading") {
         await new Promise((resolve) => {
@@ -3436,9 +3221,6 @@ class ContentScriptManager {
       this.setupMessageListeners();
 
       this.isInitialized = true;
-      console.log(
-        "Video Speed Hotkey: Content script initialized successfully",
-      );
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error initializing content script:",
@@ -3448,9 +3230,7 @@ class ContentScriptManager {
       // Retry initialization if it failed
       if (this.initializationRetries < this.maxRetries) {
         this.initializationRetries++;
-        console.log(
-          `Video Speed Hotkey: Retrying initialization (${this.initializationRetries}/${this.maxRetries})`,
-        );
+
         setTimeout(() => this.initialize(), 1000 * this.initializationRetries);
       }
     }
@@ -3473,7 +3253,6 @@ class ContentScriptManager {
 
         if (response && response.success) {
           this.videoController.settings = response.settings;
-          console.log("Video Speed Hotkey: Initial settings loaded");
         } else {
           console.warn(
             "Video Speed Hotkey: Failed to load settings, using defaults",
@@ -3492,9 +3271,6 @@ class ContentScriptManager {
     const checkForNavigation = () => {
       const currentUrl = window.location.href;
       if (currentUrl !== this.lastUrl) {
-        console.log(
-          "Video Speed Hotkey: Navigation detected, reinitializing...",
-        );
         this.handleNavigation(this.lastUrl, currentUrl);
         this.lastUrl = currentUrl;
       }
@@ -3577,9 +3353,6 @@ class ContentScriptManager {
       setTimeout(() => {
         if (this.videoController) {
           this.videoController.detectVideos();
-          console.log(
-            "Video Speed Hotkey: Videos re-detected after navigation",
-          );
         }
       }, 500);
     } catch (error) {
@@ -3637,10 +3410,6 @@ class ContentScriptManager {
           case "SETTINGS_UPDATED":
             if (this.videoController) {
               this.videoController.settings = message.settings;
-              console.log(
-                "Video Speed Hotkey: Settings updated in content script",
-                message.settings,
-              );
               // Force refresh of settings in video controller
               if (this.videoController.refreshSettings) {
                 this.videoController.refreshSettings(message.settings);
@@ -3681,7 +3450,6 @@ class ContentScriptManager {
    * Reinitialize the content script (useful for debugging or recovery)
    */
   async reinitialize() {
-    console.log("Video Speed Hotkey: Reinitializing content script...");
     this.cleanup();
     this.isInitialized = false;
     this.initializationRetries = 0;
@@ -3693,8 +3461,6 @@ class ContentScriptManager {
    */
   cleanup() {
     try {
-      console.log("Video Speed Hotkey: Cleaning up content script...");
-
       // Clean up video controller
       if (this.videoController) {
         this.videoController.resetAllSpeeds();
@@ -3717,7 +3483,6 @@ class ContentScriptManager {
       window.removeEventListener("beforeunload", this.handleBeforeUnload);
 
       this.isInitialized = false;
-      console.log("Video Speed Hotkey: Cleanup completed");
     } catch (error) {
       console.error("Video Speed Hotkey: Error during cleanup:", error);
     }
@@ -3754,8 +3519,6 @@ window.addEventListener("beforeunload", () => {
       // Clear any pending timers
       contentScriptManager.videoController.clearAutoHideTimer();
     }
-
-    console.log("Video Speed Hotkey: Page unload cleanup completed");
   } catch (error) {
     console.error(
       "Video Speed Hotkey: Error during page unload cleanup:",
@@ -3772,7 +3535,6 @@ window.addEventListener("pagehide", () => {
       contentScriptManager.videoController.cleanupStaleElements();
       contentScriptManager.videoController.clearAutoHideTimer();
     }
-    console.log("Video Speed Hotkey: Page hide cleanup completed");
   } catch (error) {
     console.error("Video Speed Hotkey: Error during page hide cleanup:", error);
   }
@@ -3786,7 +3548,6 @@ if (typeof chrome !== "undefined" && chrome.runtime) {
         contentScriptManager.videoController.resetAllSpeeds();
         contentScriptManager.videoController.removeHotkeyListeners();
       }
-      console.log("Video Speed Hotkey: Cleanup completed on extension suspend");
     } catch (error) {
       console.error(
         "Video Speed Hotkey: Error during extension cleanup:",

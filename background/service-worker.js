@@ -4,16 +4,12 @@
 
 // Import settings utilities
 importScripts(chrome.runtime.getURL("shared/settings.js"));
-console.log("Video Speed Hotkey: Background service worker loaded");
 
 // Initialize extension on install
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log("Video Speed Hotkey: Extension installed");
-
   // Initialize settings using the settings utilities
   try {
     const settings = await VideoSpeedHotkeySettings.loadSettings();
-    console.log("Video Speed Hotkey: Settings initialized:", settings);
   } catch (error) {
     console.error("Video Speed Hotkey: Error initializing settings:", error);
   }
@@ -21,8 +17,6 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Video Speed Hotkey: Message received:", message);
-
   switch (message.type) {
     case "GET_SETTINGS":
       handleGetSettings(sendResponse);
@@ -67,7 +61,6 @@ async function handleUpdateSettings(newSettings, sendResponse) {
     // Broadcast settings update to all tabs
     await broadcastSettingsUpdate(newSettings);
 
-    console.log("Video Speed Hotkey: Settings updated and broadcasted");
     sendResponse({ success: true });
   } catch (error) {
     console.error("Video Speed Hotkey: Error saving settings:", error);
@@ -95,9 +88,6 @@ async function broadcastSettingsUpdate(settings) {
     });
 
     await Promise.allSettled(broadcastPromises);
-    console.log(
-      `Video Speed Hotkey: Settings broadcasted to ${tabs.length} tabs`,
-    );
   } catch (error) {
     console.error("Video Speed Hotkey: Error broadcasting settings:", error);
   }
@@ -136,9 +126,6 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
   if (namespace === "sync" && changes.videoSpeedHotkeySettings) {
     const newSettings = changes.videoSpeedHotkeySettings.newValue;
     if (newSettings) {
-      console.log(
-        "Video Speed Hotkey: Settings changed externally, broadcasting update",
-      );
       await broadcastSettingsUpdate(newSettings);
     }
   }
@@ -146,8 +133,6 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
 
 // Handle extension startup
 chrome.runtime.onStartup.addListener(async () => {
-  console.log("Video Speed Hotkey: Extension startup");
-
   // Ensure settings are properly initialized
   try {
     await VideoSpeedHotkeySettings.loadSettings();
@@ -168,7 +153,6 @@ async function handleResetSettings(sendResponse) {
     const defaultSettings = await VideoSpeedHotkeySettings.resetToDefaults();
     await broadcastSettingsUpdate(defaultSettings);
 
-    console.log("Video Speed Hotkey: Settings reset to defaults");
     sendResponse({ success: true, settings: defaultSettings });
   } catch (error) {
     console.error("Video Speed Hotkey: Error resetting settings:", error);

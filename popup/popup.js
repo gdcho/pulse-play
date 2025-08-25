@@ -2,8 +2,6 @@
 // Popup JavaScript for Video Speed Hotkey extension
 // Handles settings interface interactions
 
-console.log("Video Speed Hotkey: Popup script loaded");
-
 // DOM elements
 let elements = {};
 
@@ -65,8 +63,6 @@ let speedPreviewTimeout = null;
 document.addEventListener("DOMContentLoaded", initializePopup);
 
 function initializePopup() {
-  console.log("Video Speed Hotkey: Initializing popup");
-
   // Get DOM element references
   elements = {
     // Hotkey elements commented out since hotkey is fixed
@@ -137,8 +133,6 @@ function setupEventListeners() {
   // Visual indicator settings - auto-save
   elements.showIndicator.addEventListener("change", autoSaveSettings);
   elements.indicatorPosition.addEventListener("change", autoSaveSettings);
-
-  console.log("Video Speed Hotkey: Event listeners set up");
 }
 
 // Hotkey input handling - commented out since hotkey is fixed
@@ -172,7 +166,6 @@ function handleHotkeyInput(event) {
   // Validate hotkey and show visual feedback
   validateHotkey(key, modifiers);
 
-  console.log("Video Speed Hotkey: Captured hotkey:", { key, modifiers });
 }
 */
 
@@ -211,7 +204,6 @@ function handleHotkeyPreset() {
     const modifiers = getSelectedModifiers();
     validateHotkey(selectedKey, modifiers);
 
-    console.log("Video Speed Hotkey: Preset selected:", selectedKey);
   }
 }
 */
@@ -337,16 +329,6 @@ function autoSaveSettings() {
     },
   };
 
-  console.log("Video Speed Hotkey: Auto-saving settings:", newSettings);
-  console.log(
-    "Video Speed Hotkey: Speed multiplier from slider:",
-    elements.speedMultiplier.value,
-  );
-  console.log(
-    "Video Speed Hotkey: Parsed speed multiplier:",
-    newSettings.speedMultiplier,
-  );
-
   // Update current settings
   currentSettings = newSettings;
 
@@ -358,7 +340,6 @@ function autoSaveSettings() {
     },
     (response) => {
       if (response && response.success) {
-        console.log("Video Speed Hotkey: Settings auto-saved successfully");
       } else {
         console.error("Video Speed Hotkey: Failed to auto-save settings");
       }
@@ -371,7 +352,6 @@ function loadSettings() {
     if (response && response.success) {
       currentSettings = response.settings;
       renderSettings();
-      console.log("Video Speed Hotkey: Settings loaded in popup");
     } else {
       console.error("Video Speed Hotkey: Failed to load settings");
     }
@@ -381,17 +361,12 @@ function loadSettings() {
 function renderSettings() {
   if (!currentSettings) return;
 
-  console.log("Video Speed Hotkey: Rendering settings:", currentSettings);
-
   // Hotkey is fixed to backquote - no need to render hotkey UI elements
   // The hotkey display is handled by the HTML template
 
   // Speed multiplier
   elements.speedMultiplier.value = currentSettings.speedMultiplier;
-  console.log(
-    "Video Speed Hotkey: Set speed multiplier slider to:",
-    currentSettings.speedMultiplier,
-  );
+
   updateSpeedValue();
 
   // Platform settings
@@ -403,8 +378,6 @@ function renderSettings() {
   // UI settings
   elements.showIndicator.checked = currentSettings.ui.showIndicator;
   elements.indicatorPosition.value = currentSettings.ui.indicatorPosition;
-
-  console.log("Video Speed Hotkey: Settings rendered in popup");
 }
 
 // Theme management functions
@@ -415,8 +388,6 @@ function toggleTheme() {
   // Save theme preference
   const theme = isDark ? "dark" : "light";
   localStorage.setItem("pulse-play-theme", theme);
-
-  console.log("Video Speed Hotkey: Theme toggled to:", theme);
 }
 
 function loadTheme() {

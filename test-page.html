@@ -239,9 +239,6 @@
         logEntry.textContent = `[${timestamp}] ${message}`;
         logContent.appendChild(logEntry);
         logContent.scrollTop = logContent.scrollHeight;
-
-        // Also log to console
-        console.log(`[${timestamp}] ${message}`);
       }
 
       // Check extension status
