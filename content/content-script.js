@@ -8,7 +8,10 @@
 class VideoSpeedController {
   constructor() {
     this.settings = null;
+    this.theme = "light"; // updated from chrome.storage.local after init
     this.isInitialized = false;
+    this.speedLockActive = false;
+    this.lastHotkeyTapTime = 0;
     this.trackedVideos = new Map(); // Store video elements and their state
     this.lastActiveVideo = null;
 
@@ -716,8 +719,12 @@ class VideoSpeedController {
         event.preventDefault();
         event.stopPropagation();
 
-        // Deactivate speed boost
-        this.deactivateSpeedBoost(event);
+        if (this.speedLockActive) {
+          // Locked — just reset state so next keydown is treated as fresh
+          this.resetHotkeyState();
+        } else {
+          this.deactivateSpeedBoost(event);
+        }
       }
     } catch (error) {
       console.error("Video Speed Hotkey: Error in keyup handler:", error);
@@ -729,18 +736,17 @@ class VideoSpeedController {
    */
   handleWindowBlur() {
     try {
-      // Reset speed boost when window loses focus
+      // If speed is locked or preset active, don't reset
+      if (this.speedLockActive) {
+        this.resetHotkeyState();
+        return;
+      }
       if (this.hotkeyState.isPressed) {
         this.deactivateSpeedBoost();
       } else {
-        // Also hide indicator if it's showing but no speed boost is active
         this.hideSpeedIndicator();
       }
-
-      // Reset all video speeds to ensure clean state when tab loses focus
       this.resetAllSpeeds();
-
-      // Clear any pending timers
       this.clearAutoHideTimer();
     } catch (error) {
       console.error("Video Speed Hotkey: Error in window blur handler:", error);
@@ -934,21 +940,55 @@ class VideoSpeedController {
    */
   activateSpeedBoost(event) {
     try {
-      // Set hotkey state
+      const now = Date.now();
+      const doubleTapMs = this.settings?.speedLock?.doubleTapMs ?? 300;
+      const isDoubleTap = now - this.lastHotkeyTapTime < doubleTapMs;
+      this.lastHotkeyTapTime = now;
+
+      // Double-tap toggles speed lock
+      if (this.settings?.speedLock?.enabled && isDoubleTap) {
+        if (this.speedLockActive) {
+          // Unlock
+          this.speedLockActive = false;
+          this.restoreOriginalSpeed();
+          this.hideSpeedIndicator();
+          this.resetHotkeyState();
+        } else {
+          // Lock
+          this.speedLockActive = true;
+          const multiplier = this.settings.speedMultiplier || 2.0;
+          this.applySpeedBoost(multiplier);
+          if (this.settings?.speedLock?.hideOverlay) {
+            this.showSpeedIndicator(multiplier);
+            setTimeout(() => {
+              if (this.speedLockActive) this.hideSpeedIndicator(true);
+            }, 500);
+          } else {
+            this.showSpeedIndicator(multiplier);
+          }
+          this.resetHotkeyState(); // don't set isPressed — lock handles it
+        }
+        return;
+      }
+
+      // If speed lock is already active, single tap does nothing extra
+      // But mark key as pressed so OS key-repeats can't re-trigger this path
+      if (this.speedLockActive) {
+        this.hotkeyState.isPressed = true;
+        this.hotkeyState.currentKey = this.normalizeKey(event.key);
+        this.hotkeyState.preventMultipleActivations = true;
+        return;
+      }
+
+      // Normal hold-to-boost
       this.hotkeyState.isPressed = true;
       this.hotkeyState.currentKey = this.normalizeKey(event.key);
       this.hotkeyState.preventMultipleActivations = true;
-
-      // Apply speed boost using configured multiplier
       const multiplier = this.settings.speedMultiplier || 2.0;
-
       const success = this.applySpeedBoost(multiplier);
-
       if (success) {
-        // Show speed indicator
         this.showSpeedIndicator(multiplier);
       } else {
-        // Reset state if activation failed
         this.resetHotkeyState();
       }
     } catch (error) {
@@ -963,6 +1003,10 @@ class VideoSpeedController {
    */
   deactivateSpeedBoost(event = null) {
     try {
+      // Don't deactivate if speed is locked
+      if (this.speedLockActive) return;
+      // Don't deactivate if a preset is active
+
       // Only deactivate if currently active
       if (!this.hotkeyState.isPressed) {
         return;
@@ -1051,9 +1095,10 @@ class VideoSpeedController {
       // Create content with >> icon and speed
       const speedText = speed ? `${speed.toFixed(1)}x` : "2.0x";
 
-      indicator.innerHTML = `
-        <div class="speed-text">${speedText} ▶▶</div>
-      `;
+      const fastForwardSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="speed-icon" width="16" height="16" style="width:16px;height:16px;flex-shrink:0;margin-left:6px;display:block;position:relative;top:-1px"><path d="M12 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 12 18z"/><path d="M2 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 2 18z"/></svg>`;
+      const lockSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="speed-icon" width="16" height="16" style="width:16px;height:16px;flex-shrink:0;margin-left:6px;display:block;position:relative;top:-2px"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+      const iconSVG = this.speedLockActive ? lockSVG : fastForwardSVG;
+      indicator.innerHTML = `<div class="speed-text" style="display:flex;align-items:center;gap:0;line-height:1;font-size:16px">${speedText}${iconSVG}</div>`;
 
       // Apply base styles
       this.applyIndicatorStyles(indicator);
@@ -1061,9 +1106,17 @@ class VideoSpeedController {
       // Position indicator over the active video
       this.positionIndicatorOverVideo(indicator);
 
-      // Add to page
-      if (document.body) {
-        document.body.appendChild(indicator);
+      // Add to page — use fullscreen element if active, so it renders above the fullscreen layer
+      const fullscreenEl =
+        document.fullscreenElement || document.webkitFullscreenElement;
+      const container = fullscreenEl || document.body;
+      if (container) {
+        // Ensure the fullscreen container can hold absolutely-positioned children
+        if (fullscreenEl) {
+          const fs = getComputedStyle(fullscreenEl).position;
+          if (fs === "static") fullscreenEl.style.position = "relative";
+        }
+        container.appendChild(indicator);
       } else {
         console.warn(
           "Video Speed Hotkey: Document body not available, cannot add indicator",
@@ -1098,9 +1151,6 @@ class VideoSpeedController {
                 getComputedStyle(indicator).opacity === "0"
               ) {
                 indicator.style.opacity = "1";
-                indicator.style.background =
-                  "linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)";
-                indicator.style.border = "3px solid #a78bfa";
               }
             } catch (fallbackError) {
               console.warn(
@@ -1148,10 +1198,13 @@ class VideoSpeedController {
 
   /**
    * Hide speed indicator overlay
+   * @param {boolean} force - bypass lock/preset guard (e.g. for timed fade after lock)
    * @returns {boolean} True if indicator was hidden successfully
    */
-  hideSpeedIndicator() {
+  hideSpeedIndicator(force = false) {
     try {
+      if (!force && this.speedLockActive) return;
+
       const indicator = document.getElementById("video-speed-hotkey-indicator");
 
       if (!indicator) {
@@ -1201,47 +1254,62 @@ class VideoSpeedController {
   }
 
   /**
+   * Returns true if the user has selected dark theme in the popup.
+   * @returns {boolean}
+   */
+  isDarkMode() {
+    return this.theme === "dark";
+  }
+
+  /**
    * Apply base CSS styles to the speed indicator
    * @param {HTMLElement} indicator - The indicator element
    */
   applyIndicatorStyles(indicator) {
-    // Enhanced styles for video overlay with logo, >> icon and speed using vibrant color scheme
-    const styles = {
+    const dark = this.isDarkMode();
+
+    const styles = dark
+      ? {
+          background:
+            "radial-gradient(ellipse at center, rgba(80, 0, 0, 0.9) 0%, rgba(15, 15, 15, 0.95) 100%)",
+          color: "#ffffff",
+          border: "1px solid rgba(255, 60, 60, 0.6)",
+          boxShadow:
+            "0 0 0 1px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.7), 0 0 50px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.15)",
+        }
+      : {
+          background:
+            "radial-gradient(ellipse at center, rgba(255, 210, 210, 0.97) 0%, rgba(250, 250, 250, 0.97) 100%)",
+          color: "#0f0f0f",
+          border: "1px solid rgba(255, 0, 0, 0.35)",
+          boxShadow:
+            "0 0 0 1px rgba(255, 0, 0, 0.3), 0 0 16px rgba(255, 0, 0, 0.5), 0 0 40px rgba(255, 0, 0, 0.2), inset 0 0 16px rgba(255, 0, 0, 0.08)",
+        };
+
+    Object.assign(indicator.style, {
       position: "fixed",
-      zIndex: "2147483647", // Maximum z-index to ensure visibility
-      background:
-        "linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%)", // Purple gradient background
-      color: "white",
-      padding: "24px 28px",
-      borderRadius: "16px",
-      fontSize: "16px",
+      zIndex: "2147483647",
+      padding: "9px 16px",
+      borderRadius: "22px",
       fontFamily:
-        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+        "'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
       fontWeight: "600",
       pointerEvents: "none",
       userSelect: "none",
       opacity: "0",
-      transition: "all 0.3s ease-in-out",
-      boxShadow:
-        "0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3)",
-      minWidth: "100px",
-      textAlign: "center",
+      transition: "opacity 0.2s ease-in-out, transform 0.2s ease-in-out",
       whiteSpace: "nowrap",
-      backdropFilter: "blur(15px)",
-      WebkitBackdropFilter: "blur(15px)",
-      border: "3px solid #a78bfa",
-      textShadow: "0 2px 4px rgba(0, 0, 0, 0.8)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      textShadow: "none",
       display: "flex",
-      flexDirection: "column",
       alignItems: "center",
-      gap: "12px",
-    };
-
-    // Apply styles to the element
-    Object.assign(indicator.style, styles);
+      transform: "scale(0.95)",
+      ...styles,
+    });
 
     // Ensure CSS rules are added for animations
-    this.ensureIndicatorCSS();
+    this.ensureIndicatorCSS(dark);
   }
 
   /**
@@ -1304,44 +1372,67 @@ class VideoSpeedController {
       // Get user's preferred indicator position
       const position = this.settings?.ui?.indicatorPosition || "top-right";
 
-      // Clear any existing position styles
+      // In fullscreen the indicator is a child of the fullscreen element,
+      // so use position:absolute with right/bottom properties to avoid
+      // transform-based clipping at the edges.
+      const fullscreenEl =
+        document.fullscreenElement || document.webkitFullscreenElement;
+
       indicator.style.top = "";
       indicator.style.bottom = "";
       indicator.style.left = "";
       indicator.style.right = "";
-      indicator.style.transform = "";
+      indicator.style.position = fullscreenEl ? "absolute" : "fixed";
 
-      // Position indicator relative to video based on user preference
-      switch (position) {
-        case "top-left":
-          indicator.style.top = `${videoRect.top + offset}px`;
-          indicator.style.left = `${videoRect.left + offset}px`;
-          break;
-        case "top-right":
-          indicator.style.top = `${videoRect.top + offset}px`;
-          indicator.style.left = `${videoRect.right - offset}px`;
-          indicator.style.transform = "translateX(-100%)";
-          break;
-        case "bottom-left":
-          indicator.style.top = `${videoRect.bottom - offset}px`;
-          indicator.style.left = `${videoRect.left + offset}px`;
-          indicator.style.transform = "translateY(-100%)";
-          break;
-        case "bottom-right":
-          indicator.style.top = `${videoRect.bottom - offset}px`;
-          indicator.style.left = `${videoRect.right - offset}px`;
-          indicator.style.transform = "translate(-100%, -100%)";
-          break;
-        default:
-          // Default to top-right
-          indicator.style.top = `${videoRect.top + offset}px`;
-          indicator.style.left = `${videoRect.right - offset}px`;
-          indicator.style.transform = "translateX(-100%)";
-          break;
+      if (fullscreenEl) {
+        const containerRect = fullscreenEl.getBoundingClientRect();
+        const fromTop = videoRect.top - containerRect.top;
+        const fromLeft = videoRect.left - containerRect.left;
+        const fromRight = containerRect.right - videoRect.right;
+        const fromBottom = containerRect.bottom - videoRect.bottom;
+
+        switch (position) {
+          case "top-left":
+            indicator.style.top = `${fromTop + offset}px`;
+            indicator.style.left = `${fromLeft + offset}px`;
+            break;
+          case "top-right":
+            indicator.style.top = `${fromTop + offset}px`;
+            indicator.style.right = `${fromRight + offset}px`;
+            break;
+          case "bottom-left":
+            indicator.style.bottom = `${fromBottom + offset}px`;
+            indicator.style.left = `${fromLeft + offset}px`;
+            break;
+          case "bottom-right":
+          default:
+            indicator.style.bottom = `${fromBottom + offset}px`;
+            indicator.style.right = `${fromRight + offset}px`;
+            break;
+        }
+      } else {
+        // Non-fullscreen: position:fixed relative to viewport
+        switch (position) {
+          case "top-left":
+            indicator.style.top = `${videoRect.top + offset}px`;
+            indicator.style.left = `${videoRect.left + offset}px`;
+            break;
+          case "top-right":
+            indicator.style.top = `${videoRect.top + offset}px`;
+            indicator.style.right = `${window.innerWidth - videoRect.right + offset}px`;
+            break;
+          case "bottom-left":
+            indicator.style.bottom = `${window.innerHeight - videoRect.bottom + offset}px`;
+            indicator.style.left = `${videoRect.left + offset}px`;
+            break;
+          case "bottom-right":
+          default:
+            indicator.style.bottom = `${window.innerHeight - videoRect.bottom + offset}px`;
+            indicator.style.right = `${window.innerWidth - videoRect.right + offset}px`;
+            break;
+        }
       }
 
-      // Set common positioning styles
-      indicator.style.position = "fixed";
       indicator.style.zIndex = "2147483647";
     } catch (error) {
       console.error(
@@ -1726,11 +1817,12 @@ class VideoSpeedController {
         } catch (ruleError) {}
       };
 
-      // Add fade-in rule
+      // Add fade-in + scale-up rule (ambient mode reveal)
       safeInsertRule(
         `
         .video-speed-hotkey-indicator-visible {
           opacity: 1 !important;
+          transform: scale(1) !important;
         }
       `,
         styleSheet.cssRules.length,
@@ -1741,77 +1833,48 @@ class VideoSpeedController {
         `
         .video-speed-hotkey-indicator-hiding {
           opacity: 0 !important;
+          transform: scale(0.95) !important;
           transition: opacity 0.2s ease-in-out !important;
         }
       `,
         styleSheet.cssRules.length,
       );
 
-      // Add pulsing animation for the icon
-      safeInsertRule(
-        `
-        @keyframes speedPulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-
-        .video-speed-hotkey-indicator .speed-icon {
-          animation: speedPulse 1.5s ease-in-out infinite !important;
-        }
-      `,
-        styleSheet.cssRules.length,
-      );
-
-      // Add base indicator styles as backup using vibrant color scheme with logo
+      // Base indicator styles — structural only; theme colors set via inline styles
       safeInsertRule(
         `
         .video-speed-hotkey-indicator {
           position: fixed !important;
           z-index: 2147483647 !important;
-          background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%) !important;
-          color: white !important;
-          padding: 24px 28px !important;
-          border-radius: 16px !important;
-          font-size: 16px !important;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
-          font-weight: 600 !important;
+          padding: 9px 16px !important;
+          border-radius: 22px !important;
+          font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
           pointer-events: none !important;
           user-select: none !important;
           opacity: 0 !important;
-          transition: all 0.3s ease-in-out !important;
-          box-shadow: 0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3) !important;
-          min-width: 100px !important;
-          text-align: center !important;
+          transform: scale(0.95) !important;
+          transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out !important;
           white-space: nowrap !important;
-          border: 3px solid #a78bfa !important;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
           display: flex !important;
-          flex-direction: column !important;
           align-items: center !important;
-          gap: 12px !important;
-        }
-
-        .video-speed-hotkey-indicator .speed-icon {
-          font-size: 28px !important;
-          line-height: 1 !important;
-          color: #fb5354 !important;
-          text-shadow: 0 0 20px rgba(251, 83, 84, 0.8) !important;
-          animation: speedPulse 1.5s ease-in-out infinite !important;
         }
 
         .video-speed-hotkey-indicator .speed-text {
-          font-size: 20px !important;
-          font-weight: 700 !important;
-          color: white !important;
-          letter-spacing: 1px !important;
-          text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
-          animation: textGlow 2s ease-in-out infinite alternate !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          color: inherit !important;
+          letter-spacing: 0.3px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
         }
-
-        @keyframes textGlow {
-          0% { text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); }
-          100% { text-shadow: 0 2px 8px rgba(0, 0, 0, 1), 0 0 15px rgba(136, 94, 190, 0.7); }
+        .video-speed-hotkey-indicator .speed-icon {
+          width: 18px !important;
+          height: 18px !important;
+          flex-shrink: 0 !important;
+          opacity: 0.85 !important;
         }
       `,
         styleSheet.cssRules.length,
@@ -1839,62 +1902,50 @@ class VideoSpeedController {
       fallbackStyle.textContent = `
         .video-speed-hotkey-indicator-visible {
           opacity: 1 !important;
+          transform: scale(1) !important;
         }
         .video-speed-hotkey-indicator-hiding {
           opacity: 0 !important;
+          transform: scale(0.95) !important;
           transition: opacity 0.2s ease-in-out !important;
-        }
-        @keyframes speedPulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .video-speed-hotkey-indicator .speed-icon {
-          animation: speedPulse 1.5s ease-in-out infinite !important;
         }
         .video-speed-hotkey-indicator {
           position: fixed !important;
           z-index: 2147483647 !important;
-          background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ddd6fe 100%) !important;
-          color: white !important;
-          padding: 24px 28px !important;
-          border-radius: 16px !important;
-          font-size: 16px !important;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
-          font-weight: 600 !important;
+          padding: 10px 20px !important;
+          border-radius: 24px !important;
+          font-size: 15px !important;
+          font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
+          font-weight: 500 !important;
           pointer-events: none !important;
           user-select: none !important;
           opacity: 0 !important;
-          transition: all 0.3s ease-in-out !important;
-          box-shadow: 0 12px 40px rgba(168, 139, 220, 0.9), 0 0 0 3px #a78bfa, 0 0 20px rgba(168, 139, 220, 0.3) !important;
-          min-width: 100px !important;
+          transform: scale(0.95) !important;
+          transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out !important;
+          min-width: 80px !important;
           text-align: center !important;
           white-space: nowrap !important;
-          border: 3px solid #a78bfa !important;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
           display: flex !important;
           flex-direction: column !important;
           align-items: center !important;
-          gap: 12px !important;
-        }
-        .video-speed-hotkey-indicator .speed-icon {
-          font-size: 28px !important;
-          line-height: 1 !important;
-          color: #fb5354 !important;
-          text-shadow: 0 0 20px rgba(251, 83, 84, 0.8) !important;
-          animation: speedPulse 1.5s ease-in-out infinite !important;
+          gap: 8px !important;
         }
         .video-speed-hotkey-indicator .speed-text {
-          font-size: 20px !important;
-          font-weight: 700 !important;
-          color: white !important;
-          letter-spacing: 1px !important;
-          text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
-          animation: textGlow 2s ease-in-out infinite alternate !important;
+          font-size: 18px !important;
+          font-weight: 500 !important;
+          color: inherit !important;
+          letter-spacing: 0.5px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
         }
-        @keyframes textGlow {
-          0% { text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8); }
-          100% { text-shadow: 0 2px 8px rgba(0, 0, 0, 1), 0 0 15px rgba(136, 94, 190, 0.7); }
+        .video-speed-hotkey-indicator .speed-icon {
+          width: 13px !important;
+          height: 13px !important;
+          flex-shrink: 0 !important;
+          vertical-align: middle !important;
         }
 
         /* Custom Scrollbar Styling for Video Speed Hotkey Extension */
@@ -2481,6 +2532,9 @@ class VideoSpeedController {
    */
   setupAutoHideTimer() {
     try {
+      // Never auto-hide when locked, preset active, or always-on mode
+      if (this.speedLockActive) return;
+
       // Clear any existing timer
       this.clearAutoHideTimer();
 
@@ -3240,7 +3294,7 @@ class ContentScriptManager {
    * Load initial settings from background script
    */
   async loadInitialSettings() {
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, (response) => {
         if (chrome.runtime.lastError) {
           console.warn(
@@ -3258,6 +3312,14 @@ class ContentScriptManager {
             "Video Speed Hotkey: Failed to load settings, using defaults",
           );
         }
+        resolve();
+      });
+    });
+
+    // Load theme set in popup
+    await new Promise((resolve) => {
+      chrome.storage.local.get("pulsePlayTheme", (result) => {
+        this.videoController.theme = result.pulsePlayTheme || "light";
         resolve();
       });
     });
@@ -3404,13 +3466,44 @@ class ContentScriptManager {
    * Set up message listeners for communication with background script
    */
   setupMessageListeners() {
+    // React to theme changes from the popup instantly, without a page refresh
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.pulsePlayTheme) {
+        this.videoController.theme = changes.pulsePlayTheme.newValue || "light";
+      }
+    });
+
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       try {
         switch (message.type) {
           case "SETTINGS_UPDATED":
             if (this.videoController) {
               this.videoController.settings = message.settings;
-              // Force refresh of settings in video controller
+              // Sync theme from storage whenever settings change
+              chrome.storage.local.get("pulsePlayTheme", (result) => {
+                this.videoController.theme = result.pulsePlayTheme || "light";
+              });
+              // If speed is locked, apply the updated multiplier directly
+              if (this.videoController.speedLockActive) {
+                const newMultiplier = message.settings.speedMultiplier || 2.0;
+                const video = this.videoController.getActiveVideo();
+                if (video) {
+                  video.playbackRate = newMultiplier;
+                  // Do NOT update originalRate — it holds the pre-lock speed
+                  // so unlocking correctly reverts to what was playing before
+                }
+                if (!message.settings?.speedLock?.hideOverlay) {
+                  this.videoController.showSpeedIndicator(newMultiplier);
+                } else {
+                  // Briefly show updated speed then fade out
+                  this.videoController.showSpeedIndicator(newMultiplier);
+                  setTimeout(() => {
+                    if (this.videoController.speedLockActive) {
+                      this.videoController.hideSpeedIndicator(true);
+                    }
+                  }, 500);
+                }
+              }
               if (this.videoController.refreshSettings) {
                 this.videoController.refreshSettings(message.settings);
               }

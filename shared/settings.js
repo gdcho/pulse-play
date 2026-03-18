@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
     indicatorPosition: "top-right",
     indicatorTimeout: 2000,
   },
+  speedLock: { enabled: false, doubleTapMs: 300, hideOverlay: false },
 };
 
 // Settings validation schema
@@ -205,6 +206,17 @@ function validateSettings(settings) {
     }
   }
 
+  // Validate speedLock settings
+  if (settings.speedLock) {
+    if (settings.speedLock.enabled !== undefined && typeof settings.speedLock.enabled !== "boolean") {
+      errors.push("speedLock.enabled must be a boolean");
+    }
+    if (settings.speedLock.doubleTapMs !== undefined && typeof settings.speedLock.doubleTapMs !== "number") {
+      errors.push("speedLock.doubleTapMs must be a number");
+    }
+  }
+
+
   return { isValid: errors.length === 0, errors };
 }
 
@@ -235,6 +247,10 @@ function mergeWithDefaults(userSettings) {
 
   if (userSettings.ui) {
     Object.assign(merged.ui, userSettings.ui);
+  }
+
+  if (userSettings.speedLock && typeof userSettings.speedLock === "object") {
+    Object.assign(merged.speedLock, userSettings.speedLock);
   }
 
   return merged;

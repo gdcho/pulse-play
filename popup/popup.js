@@ -88,7 +88,12 @@ function initializePopup() {
     // platformGeneric: document.getElementById("platform-generic"),
     showIndicator: document.getElementById("show-indicator"),
     indicatorPosition: document.getElementById("indicator-position"),
+    speedLockEnabled: document.getElementById("speed-lock-enabled"),
+    speedLockHideOverlay: document.getElementById("speed-lock-hide-overlay"),
   };
+
+  // Render Lucide icons
+  lucide.createIcons();
 
   // Set up event listeners
   setupEventListeners();
@@ -133,6 +138,9 @@ function setupEventListeners() {
   // Visual indicator settings - auto-save
   elements.showIndicator.addEventListener("change", autoSaveSettings);
   elements.indicatorPosition.addEventListener("change", autoSaveSettings);
+
+  elements.speedLockEnabled.addEventListener("change", autoSaveSettings);
+  elements.speedLockHideOverlay.addEventListener("change", autoSaveSettings);
 }
 
 // Hotkey input handling - commented out since hotkey is fixed
@@ -327,6 +335,7 @@ function autoSaveSettings() {
       indicatorPosition: elements.indicatorPosition.value,
       indicatorTimeout: currentSettings.ui.indicatorTimeout, // Keep existing timeout
     },
+    speedLock: { enabled: elements.speedLockEnabled.checked, doubleTapMs: 300, hideOverlay: elements.speedLockHideOverlay.checked },
   };
 
   // Update current settings
@@ -378,6 +387,9 @@ function renderSettings() {
   // UI settings
   elements.showIndicator.checked = currentSettings.ui.showIndicator;
   elements.indicatorPosition.value = currentSettings.ui.indicatorPosition;
+
+  elements.speedLockEnabled.checked = currentSettings.speedLock?.enabled ?? false;
+  elements.speedLockHideOverlay.checked = currentSettings.speedLock?.hideOverlay ?? false;
 }
 
 // Theme management functions
@@ -385,17 +397,18 @@ function toggleTheme() {
   const isDark = document.body.classList.toggle("dark");
   elements.themeToggle.classList.toggle("dark", isDark);
 
-  // Save theme preference
+  // Save theme preference to chrome.storage.local so content scripts can read it
   const theme = isDark ? "dark" : "light";
-  localStorage.setItem("pulse-play-theme", theme);
+  chrome.storage.local.set({ pulsePlayTheme: theme });
 }
 
 function loadTheme() {
-  const savedTheme = localStorage.getItem("pulse-play-theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-    elements.themeToggle.classList.add("dark");
-  }
+  chrome.storage.local.get("pulsePlayTheme", (result) => {
+    if (result.pulsePlayTheme === "dark") {
+      document.body.classList.add("dark");
+      elements.themeToggle.classList.add("dark");
+    }
+  });
 }
 
 function initializeTheme() {

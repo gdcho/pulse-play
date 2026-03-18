@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="popup.css" />
@@ -26,9 +26,9 @@
         </div>
         <div class="theme-toggle-container">
           <div class="theme-toggle" id="theme-toggle">
-            <div class="toggle-icon sun">☀</div>
+            <div class="toggle-icon sun"><i data-lucide="sun"></i></div>
             <div class="toggle-handle"></div>
-            <div class="toggle-icon moon">☾</div>
+            <div class="toggle-icon moon"><i data-lucide="moon"></i></div>
           </div>
         </div>
       </header>
@@ -181,13 +181,31 @@
             </select>
           </div>
         </section>
+
+        <section class="setting-group">
+          <h2>Speed Lock</h2>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="speed-lock-enabled" />
+              Enable speed lock (double-tap ` to lock/unlock)
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="checkbox" id="speed-lock-hide-overlay" />
+              Hide overlay when locked
+            </label>
+          </div>
+        </section>
+
+
       </main>
 
       <footer class="app-footer">
         <div class="footer-content">
           <div class="footer-section">
             <span class="footer-text">
-              Made with <span class="heart">❤️</span> by
+              Made with <span class="heart">⁠♡</span> by
               <a
                 href="https://github.com/rj-labs-co"
                 target="_blank"
@@ -197,21 +215,12 @@
                 rj labs
               </a>
             </span>
-            <span class="footer-divider"> | </span>
-            <a
-              href="https://www.buymeacoffee.com/rjsgml"
-              target="_blank"
-              rel="noreferrer"
-              class="link-secondary"
-              title="Support my work"
-            >
-              ☕ Buy me a coffee
-            </a>
           </div>
         </div>
       </footer>
     </div>
 
+    <script src="lucide.min.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>
