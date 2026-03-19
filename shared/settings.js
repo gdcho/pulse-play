@@ -93,7 +93,7 @@ const VALIDATION_RULES = {
   },
   speedMultiplier: {
     type: "number",
-    min: 1.25,
+    min: 0.25,
     max: 5.0,
     required: true,
   },
@@ -160,8 +160,8 @@ function validateSettings(settings) {
   // Validate speed multiplier
   if (settings.speedMultiplier !== undefined) {
     const speed = settings.speedMultiplier;
-    if (typeof speed !== "number" || speed < 1.25 || speed > 5.0) {
-      errors.push("Speed multiplier must be a number between 1.25 and 5.0");
+    if (typeof speed !== "number" || speed < 0.25 || speed > 5.0) {
+      errors.push("Speed multiplier must be a number between 0.25 and 5.0");
     }
   }
 
@@ -319,7 +319,7 @@ async function loadSettings() {
 
       if (
         typeof storedSettings.speedMultiplier === "number" &&
-        storedSettings.speedMultiplier >= 1.25 &&
+        storedSettings.speedMultiplier >= 0.25 &&
         storedSettings.speedMultiplier <= 5.0
       ) {
         migratedSettings.speedMultiplier = storedSettings.speedMultiplier;

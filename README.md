@@ -22,7 +22,7 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 - **Hold-to-Boost**: Press and hold the backtick (`` ` ``) key to instantly speed up videos
 - **Speed Lock**: Double-tap the backtick to lock speed — video stays boosted hands-free
-- **Customizable Speed**: Adjust from 1.25x to 5x speed with precision
+- **Customizable Speed**: Adjust from 0.25x to 5x speed with precision
 - **Smart Detection**: Automatically works with YouTube, Netflix, Vimeo, and any HTML5 video player
 - **Visual Feedback**: Ambient-style on-screen indicator shows current speed and lock status
 
@@ -35,7 +35,7 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 **⚙️ Fully Customizable**
 
-- **Speed Multiplier**: Precise control from 1.25x to 5x
+- **Speed Multiplier**: Precise control from 0.25x to 5x
 - **Speed Lock**: Double-tap to lock/unlock speed; optional overlay hide when locked
 - **Visual Settings**: Customize indicator position and display options
 - **Dark/Light Theme**: YouTube-style theme toggle in the popup
@@ -88,7 +88,7 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 - ✅ **Hold-to-Boost**: Backtick key triggers instant speed boost
 - ✅ **Speed Lock**: Double-tap to lock/unlock; survives tab switches
-- ✅ **Speed Control**: 1.25x to 5x playback speed range
+- ✅ **Speed Control**: 0.25x to 5x playback speed range
 - ✅ **Platform Support**: YouTube, Netflix, Vimeo, and generic HTML5 players
 - ✅ **Ambient Overlay**: Frosted-glass pill indicator with speed and lock icon
 - ✅ **Theme Support**: Light/dark mode synced instantly to content script
@@ -96,7 +96,7 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 ### **Advanced Settings**
 
-- **Speed Multiplier**: Precise control from 1.25x to 5x
+- **Speed Multiplier**: Precise control from 0.25x to 5x
 - **Speed Lock**: Double-tap to lock; optional hide overlay when locked
 - **Indicator Position**: Top/bottom left/right corner placement
 - **Theme Toggle**: YouTube-style dark/light toggle in popup

@@ -49,7 +49,7 @@ describe("Settings Validation", () => {
     const result = validateSettings(invalidSettings);
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain(
-      "Speed multiplier must be a number between 1.25 and 5.0",
+      "Speed multiplier must be a number between 0.25 and 5.0",
     );
   });
 
