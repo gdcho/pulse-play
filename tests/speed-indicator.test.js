@@ -171,9 +171,9 @@ describe("Speed Indicator Functionality", () => {
 
       expect(indicator.style.position).toBe("fixed");
       expect(indicator.style.zIndex).toBe("2147483647");
-      expect(indicator.style.backgroundColor).toBe("rgba(0, 0, 0, 0.9)");
-      expect(indicator.style.color).toBe("white");
       expect(indicator.style.pointerEvents).toBe("none");
+      expect(indicator.style.borderRadius).toBeTruthy();
+      expect(indicator.style.backdropFilter).toBeTruthy();
     });
   });
 

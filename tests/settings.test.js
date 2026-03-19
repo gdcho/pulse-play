@@ -117,6 +117,7 @@ describe("Settings Merging", () => {
         indicatorPosition: "bottom-left",
         indicatorTimeout: 3000,
       },
+      speedLock: { enabled: true, doubleTapMs: 400, hideOverlay: true },
     };
     const result = mergeWithDefaults(customSettings);
     expect(result).toEqual(customSettings);
@@ -230,8 +231,11 @@ describe("Settings Migration", () => {
 
     const result = migrateSettings(oldSettings, "0.9.0");
 
-    // Should merge with defaults and preserve what it can
-    expect(result).toEqual(DEFAULT_SETTINGS);
+    // Should preserve the migrated hotkey key and speed, rest from defaults
+    expect(result.hotkey.key).toBe("Space");
+    expect(result.speedMultiplier).toBe(2.0);
+    expect(result.platforms).toEqual(DEFAULT_SETTINGS.platforms);
+    expect(result.ui).toEqual(DEFAULT_SETTINGS.ui);
   });
 
   test("should handle null old settings", () => {

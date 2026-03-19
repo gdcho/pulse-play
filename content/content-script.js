@@ -1064,7 +1064,7 @@ class VideoSpeedController {
       // Validate input parameters
       if (typeof speed !== "number" || isNaN(speed)) {
         console.warn("Video Speed Hotkey: Invalid speed parameter:", speed);
-        speed = 1.0; // Default fallback
+        speed = 2.0; // Default fallback
       }
 
       // Skip if indicators are disabled in settings
@@ -3483,8 +3483,15 @@ class ContentScriptManager {
               chrome.storage.local.get("pulsePlayTheme", (result) => {
                 this.videoController.theme = result.pulsePlayTheme || "light";
               });
+              // If lock was just disabled while active, unlock and revert speed
+              const lockJustDisabled = this.videoController.speedLockActive && !message.settings?.speedLock?.enabled;
+              if (lockJustDisabled) {
+                this.videoController.speedLockActive = false;
+                this.videoController.restoreOriginalSpeed();
+                this.videoController.hideSpeedIndicator(true);
+              }
               // If speed is locked, apply the updated multiplier directly
-              if (this.videoController.speedLockActive) {
+              if (!lockJustDisabled && this.videoController.speedLockActive) {
                 const newMultiplier = message.settings.speedMultiplier || 2.0;
                 const video = this.videoController.getActiveVideo();
                 if (video) {

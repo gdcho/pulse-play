@@ -20,10 +20,11 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 **⚡ Lightning-Fast Speed Control**
 
-- **Hold-to-Boost**: Press and hold your chosen hotkey to instantly speed up videos
+- **Hold-to-Boost**: Press and hold the backtick (`` ` ``) key to instantly speed up videos
+- **Speed Lock**: Double-tap the backtick to lock speed — video stays boosted hands-free
 - **Customizable Speed**: Adjust from 1.25x to 5x speed with precision
 - **Smart Detection**: Automatically works with YouTube, Netflix, Vimeo, and any HTML5 video player
-- **Visual Feedback**: Clear on-screen indicators show current speed and status
+- **Visual Feedback**: Ambient-style on-screen indicator shows current speed and lock status
 
 **🎯 Perfect for Every Use Case**
 
@@ -34,10 +35,10 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 **⚙️ Fully Customizable**
 
-- **Hotkey Selection**: Choose from 50+ keys including function keys, arrows, and letters
-- **Modifier Keys**: Add Ctrl, Alt, Shift, or Cmd for enhanced control
-- **Visual Settings**: Customize indicator position, timeout, and display options
-- **Platform Control**: Enable/disable for specific video platforms
+- **Speed Multiplier**: Precise control from 1.25x to 5x
+- **Speed Lock**: Double-tap to lock/unlock speed; optional overlay hide when locked
+- **Visual Settings**: Customize indicator position and display options
+- **Dark/Light Theme**: YouTube-style theme toggle in the popup
 
 **🔒 Privacy & Performance**
 
@@ -48,11 +49,11 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 **🎮 How It Works**
 
-1. **Install** the extension and choose your preferred hotkey
-2. **Navigate** to any video on supported platforms
-3. **Hold** your hotkey to boost speed instantly
-4. **Release** to return to normal playback
-5. **Customize** settings through the intuitive popup interface
+1. **Install** the extension from the Chrome Web Store
+2. **Navigate** to any video on a supported platform
+3. **Hold** the backtick (`` ` ``) key to boost speed — release to return to normal
+4. **Double-tap** the backtick to lock speed hands-free; double-tap again to unlock
+5. **Customize** speed multiplier, indicator position, and theme via the popup
 
 **🌟 Why Choose Pulse Play?**
 
@@ -85,20 +86,21 @@ Transform how you watch videos with Pulse Play's intelligent speed control syste
 
 ### **Core Functionality**
 
-- ✅ **Hotkey System**: Configurable key bindings with modifier support
+- ✅ **Hold-to-Boost**: Backtick key triggers instant speed boost
+- ✅ **Speed Lock**: Double-tap to lock/unlock; survives tab switches
 - ✅ **Speed Control**: 1.25x to 5x playback speed range
 - ✅ **Platform Support**: YouTube, Netflix, Vimeo, and generic HTML5 players
-- ✅ **Visual Indicators**: Customizable on-screen speed display
-- ✅ **Settings Sync**: Cross-device configuration synchronization
-- ✅ **Performance Optimized**: Minimal resource usage and instant response
+- ✅ **Ambient Overlay**: Frosted-glass pill indicator with speed and lock icon
+- ✅ **Theme Support**: Light/dark mode synced instantly to content script
+- ✅ **Settings Sync**: Cross-device configuration via Chrome Storage API
 
 ### **Advanced Settings**
 
-- **Hotkey Configuration**: 50+ key options with modifier combinations
 - **Speed Multiplier**: Precise control from 1.25x to 5x
-- **Indicator Customization**: Position, timeout, and visibility options
-- **Platform Management**: Enable/disable for specific video sites
-- **Theme Support**: Light and dark mode with automatic detection
+- **Speed Lock**: Double-tap to lock; optional hide overlay when locked
+- **Indicator Position**: Top/bottom left/right corner placement
+- **Theme Toggle**: YouTube-style dark/light toggle in popup
+- **Live Updates**: Speed changes apply instantly while locked
 
 ## 📁 **Project Structure**
 
@@ -112,9 +114,11 @@ pulse-play/
 ├── popup/
 │   ├── popup.html        # Settings interface HTML
 │   ├── popup.js          # Settings interface JavaScript
-│   └── popup.css         # Settings interface styling
+│   ├── popup.css         # Settings interface styling
+│   └── lucide.min.js     # Lucide Icons (v0.577.0, local copy)
 ├── shared/
-│   └── settings.js       # Settings management and validation
+│   ├── settings.js       # Settings management and validation
+│   └── scrollbar-styles.css  # Shared scrollbar styles
 ├── icons/
 │   ├── icon16.png        # 16x16 extension icon
 │   ├── icon48.png        # 48x48 extension icon
@@ -134,12 +138,12 @@ pulse-play/
 **✅ Fully Implemented Features:**
 
 - Manifest V3 configuration with modern Chrome standards
-- Comprehensive hotkey system with 50+ key options
-- Advanced settings management with validation
+- Hold-to-boost and speed lock (double-tap) hotkey system
+- Ambient frosted-glass overlay with Lucide SVG icons
+- Advanced settings management with validation and cross-device sync
 - Cross-platform video detection and control
-- Visual speed indicators with customization
-- Settings synchronization across devices
-- Professional popup interface with theme support
+- YouTube-style popup UI with dark/light theme toggle
+- Real-time theme and speed updates without page refresh
 
 **🚀 Ready for Production:**
 
